@@ -18,7 +18,7 @@ lo.lambda = 1550*nm;
 fc = c/lo.lambda; 
 
 %% PULSE SHAPING
-ts = 0.01;
+ts = 0.1;
 t = (-3:ts:3); % Time vector
 beta = 0.5;   % Roll-off factor
 T = 1;         % Symbol period (for example, T = 1)
@@ -38,19 +38,14 @@ ylabel('Amplitude');
 title('Raised Cosine Impulse Response');
 grid on;
 
-hh_f = fft(hh);
+hh_f = fftshift(fft(hh));
 
 fs = B/(ts);
 L = length(t);
 f = fs/L*(-L/2:(L/2)-1);
 
 fig5 = figure();
-plot( f, abs(fftshift(hh_f))/L)
-
-
-%% DISPERSION SIMULATION
-dispersion = 1;
-f = f + fc;
+plot( f, abs(hh_f))
 
 maxf = f(end);
 minf = f(1);
@@ -63,6 +58,9 @@ lambda_vector = c./f;
 fig6 = figure();
 plot(lambda_vector, abs(hh_f))
 
+
+%% DISPERSION SIMULATION
+dispersion = 1;
 if dispersion
     
     Communication_lenght = 1000*km;
@@ -113,7 +111,6 @@ if dispersion
     hold on
     plot(t,dispersed_signal);
     plot(t,hh);
-    
 
 
 end
