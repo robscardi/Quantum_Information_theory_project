@@ -4,18 +4,26 @@ clear variables
 %% UNIT OF MEASURMENT
 um = 1e-6;
 nm = 1e-9;
+pm = 1e-12;
 MHz = 1e6;
 kHz = 1e3;
 km = 1e3;
-
-B = 50e9;           %Symbol rate
+ps = 1e-12;
+B = 25e9;           %Symbol rate
 c = 299792458;
+
+D = 17*ps/(km*nm);
+
+
 
 %% LO DATA
 lo.linewidth = 1*MHz;
 lo.PSD = -80;
 lo.lambda = 1550*nm; 
 fc = c/lo.lambda; 
+
+b2 = -((lo.lambda^2) /(2*pi*c))*D;
+
 
 %% PULSE SHAPING
 ts = 0.01;
@@ -25,10 +33,12 @@ T = 1;         % Symbol period (for example, T = 1)
 
 h = zeros(7, length(t));
 hh = zeros(1, length(t));
+
 for i = 0:1:6
     h(i+1,:) = raised_cosine_impulse(t+i-3, beta, T)';
     hh = hh + h(i+1,:);
 end
+
 fig1 = figure();
 hold on
 plot(t/B, h);
@@ -60,63 +70,89 @@ minlambda = c/maxf;
 
 lambda_vector = c./f;
 
-fig6 = figure();
-plot(lambda_vector, abs(hh_f))
-
-if dispersion
-    
-    Communication_lenght = 1000*km;
-
-    materials = {'sm800core'; 'silica'};
-    fibre = struct(...
-    'materials', {materials});
-    
-    argument = struct(...
-    'type', 'wvl',... % calculate vs. wavelength
-    'harmonic', 1,... % required
-    'min', minlambda*1e6,... % calculate from
-    'max', maxlambda*1e6); % calculate to
-    
-    modeTask = struct(...
-    'nu', [0],... % first modal index
-    'type', {'te'},... % mode types
-    'maxmode', 1,... % how many modes of each type and NU to calculate
-    'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
-    %'region', 'cladding');
-
-    infomode = false;
-    
-    modes = buildModes(argument, fibre, modeTask, infomode);
-    fig4 = figure();
-    showModes(modes, 'Modal Dispersion in Fiber')
-    
-    neff = modes.NEFF;
-    l = modes.ARG;
-
-    neff_interpolated = interp1(l, neff, lambda_vector/um);
-    beta = zeros(size(f));
+Communication_length = 60*km;
 
 
-    for i = 1:length(lambda_vector)
-        neff_ = neff_interpolated(i);
-        beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-    end
+dT = b2*Communication_length*2*B;
 
-    %hh_f = hh_f .* exp(1i.*beta.*Communication_lenght);
-    dt = exp(1i*beta*Communication_lenght);
-    
-    
-    fig7 = figure();
-    %plot(f, abs(hh_f))
-    dispersed_signal = ifft(hh_f);  
-    fig8 = figure();
-    hold on
-    plot(t,dispersed_signal);
-    plot(t,hh);
-    
+disp_h = zeros(7, length(t));
+disp_hh = zeros(1, length(t));
 
+a = rand(1, 7);
 
+for i = 0:1:6
+    disp_h(i+1,:) = a(i+1)*raised_cosine_impulse(t+i-3, beta, T+dT*B)';
+    disp_hh = disp_hh + disp_h(i+1,:);
 end
+
+fig8 = figure();
+hold on
+plot(t/B, disp_h);
+plot(t/B, disp_hh);
+xlabel('Time');
+ylabel('Amplitude');
+title('Raised Cosine Impulse Response');
+grid on;
+
+
+
+%fig6 = figure();
+%plot(lambda_vector, abs(hh_f))
+
+% if dispersion
+% 
+%     Communication_lenght = 1000*km;
+% 
+%     materials = {'sm800core'; 'silica'};
+%     fibre = struct(...
+%     'materials', {materials});
+% 
+%     argument = struct(...
+%     'type', 'wvl',... % calculate vs. wavelength
+%     'harmonic', 1,... % required
+%     'min', minlambda*1e6,... % calculate from
+%     'max', maxlambda*1e6); % calculate to
+% 
+%     modeTask = struct(...
+%     'nu', [0],... % first modal index
+%     'type', {'te'},... % mode types
+%     'maxmode', 1,... % how many modes of each type and NU to calculate
+%     'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+%     %'region', 'cladding');
+% 
+%     infomode = false;
+% 
+%     modes = buildModes(argument, fibre, modeTask, infomode);
+%     fig4 = figure();
+%     showModes(modes, 'Modal Dispersion in Fiber')
+% 
+%     neff = modes.NEFF;
+%     l = modes.ARG;
+% 
+%     neff_interpolated = interp1(l, neff, lambda_vector/um);
+%     beta = zeros(size(f));
+% 
+% 
+%     for i = 1:length(lambda_vector)
+%         neff_ = neff_interpolated(i);
+%         beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+%     end
+% 
+%     %hh_f = hh_f .* exp(1i.*beta.*Communication_lenght);
+%     dt = exp(1i*beta*Communication_lenght);
+% 
+% 
+%     fig7 = figure();
+%     %plot(f, abs(hh_f))
+%     dispersed_signal = ifft(hh_f);  
+%     fig8 = figure();
+%     hold on
+%     plot(t,dispersed_signal);
+%     plot(t,hh);
+% 
+% 
+% 
+% end
 
 
 

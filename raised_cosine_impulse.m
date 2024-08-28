@@ -17,7 +17,7 @@ function h = raised_cosine_impulse(t, beta, T)
         if abs(1 - (2 * beta * t(i) / T)) < 1e-10 || abs(1 + 2*beta*t(i)/T) < 1e-10  % handle the singularity when t = T/(2*beta)
             h(i) = (pi/4) * sinc(1/(2*beta));
         elseif t(i) == 0
-            h(i) = 1/T;
+            h(i) = 1;
         else
             numerator = sin(pi * t(i) / T) .* cos(pi * beta * t(i) / T);
             denominator = (pi * t(i) / T) .* (1 - (2 * beta * t(i) / T).^2);
