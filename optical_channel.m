@@ -9,12 +9,17 @@ MHz = 1e6;
 kHz = 1e3;
 km = 1e3;
 ps = 1e-12;
+mW = 1e-3;
+
+%% CONSTANTS
 B = 25e9;           %Symbol rate
 c = 299792458;
 
 D = 17*ps/(km*nm);
+h = 6.62607015e-34;
 
 
+maximum_power=5*mW;
 
 %% LO DATA
 lo.linewidth = 1*MHz;
@@ -31,17 +36,17 @@ t = (-3:ts:3); % Time vector
 beta = 0.5;   % Roll-off factor
 T = 1;         % Symbol period (for example, T = 1)
 
-h = zeros(7, length(t));
+sig = zeros(7, length(t));
 hh = zeros(1, length(t));
 
 for i = 0:1:6
-    h(i+1,:) = raised_cosine_impulse(t+i-3, beta, T)';
-    hh = hh + h(i+1,:);
+    sig(i+1,:) = raised_cosine_impulse(t+i-3, beta, T)';
+    hh = hh + sig(i+1,:);
 end
 
 fig1 = figure();
 hold on
-plot(t/B, h);
+plot(t/B, sig);
 plot(t/B, hh);
 xlabel('Time');
 ylabel('Amplitude');
@@ -173,21 +178,59 @@ ts = 1/fs;
 t = ts*(0:(sampling_time-1));
 
 phi = zeros(sampling_time, 1);
-rand = std*randn(length(phi)-1);
+random_walk = std*randn(length(phi)-1);
 phi(1) = 0;
 for i = 1:1:length(phi)-1
-    phi(i+1) = phi(i) + rand(i);
+    phi(i+1) = phi(i) + random_walk(i);
 end
 
 lo.wave = sin(2*pi*fc*t + phi');
-fig2 = figure();
-plot(t, lo.wave);
 y = fftshift(fft(lo.wave))/sampling_time;
 fig3 = figure();
 semilogy(fs/sampling_time*(-sampling_time/2 : (sampling_time/2 -1)), abs(y));
 
-I_comp = cos(phi);
-Q_comp = sin(phi);
+input_phase= 2*pi*rand();
+input_power= maximum_power*rand();
+
+lo.power = maximum_power;
+
+phot_energy = h*fc;
+max_avg_numb_photon = maximum_power/phot_energy;
+
+a = rand(1, 7);
+t = linspace(-cycle_time/2, cycle_time/2, length(phi))*B;
+
+disp_h = zeros(7, length(t));
+disp_hh = zeros(1, length(t));
+
+for i = 0:1:6
+    disp_h(i+1,:) = a(i+1)*raised_cosine_impulse(t+i-3, beta, T+dT*B)';
+    disp_hh = disp_hh + disp_h(i+1,:);
+end
+ 
+fig10 = figure();
+plot(disp_hh, t);
+
+
+%% IN PHASE
+avg = trapz(sqrt(abs(disp_hh)*lo.power*maximum_power)'.*cos(input_phase - (0  + phi)))./length(t);
+I_avg_num_of_phot = avg/phot_energy;
+
+%% IN QUADRATURE
+
+avg = trapz(sqrt(disp_hh.*lo.power)'.*cos(input_phase - (90  + phi)))./length(t);
+Q_avg_num_of_phot = avg/phot_energy;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
