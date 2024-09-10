@@ -19,7 +19,7 @@ D = 17*ps/(km*nm);
 h = 6.62607015e-34;
 
 
-maximum_power=5*mW;
+maximum_field=1e5; %V/m
 
 %% LO DATA
 lo.linewidth = 1*MHz;
@@ -28,6 +28,10 @@ lo.lambda = 1550*nm;
 fc = c/lo.lambda; 
 
 b2 = -((lo.lambda^2) /(2*pi*c))*D;
+
+fiber_width = 9*um;
+eps0 = 8.8541878188e-12;
+eps = (1.46).^2*eps0;
 
 
 %% PULSE SHAPING
@@ -44,38 +48,38 @@ for i = 0:1:6
     hh = hh + sig(i+1,:);
 end
 
-fig1 = figure();
-hold on
-plot(t/B, sig);
-plot(t/B, hh);
-xlabel('Time');
-ylabel('Amplitude');
-title('Raised Cosine Impulse Response');
-grid on;
-
-hh_f = fft(hh);
-
-fs = B/(ts);
-L = length(t);
-f = fs/L*(-L/2:(L/2)-1);
-
-fig5 = figure();
-plot( f, abs(fftshift(hh_f))/L)
+% fig1 = figure();
+% hold on
+% plot(t/B, sig);
+% plot(t/B, hh);
+% xlabel('Time');
+% ylabel('Amplitude');
+% title('Raised Cosine Impulse Response');
+% grid on;
+% 
+% hh_f = fft(hh);
+% 
+% fs = B/(ts);
+% L = length(t);
+% f = fs/L*(-L/2:(L/2)-1);
+% 
+% fig5 = figure();
+% plot( f, abs(fftshift(hh_f))/L)
 
 
 %% DISPERSION SIMULATION
 dispersion = 1;
-f = f + fc;
+% f = f + fc;
+% 
+% maxf = f(end);
+% minf = f(1);
+% 
+% maxlambda = c/minf;
+% minlambda = c/maxf;
+% 
+% lambda_vector = c./f;
 
-maxf = f(end);
-minf = f(1);
-
-maxlambda = c/minf;
-minlambda = c/maxf;
-
-lambda_vector = c./f;
-
-Communication_length = 60*km;
+Communication_length = 1*km;
 
 
 dT = b2*Communication_length*2*B;
@@ -163,7 +167,7 @@ grid on;
 
 %% PHASE NOISE
 cycle_time = 1/fc;
-sampling_time = 50*100; %in samples
+sampling_time = 50*1000; %in samples
 
 
 fmin = fc - lo.linewidth/2;
@@ -173,15 +177,15 @@ D = 10^(lo.PSD/10);
 var = D*((1/fmin)-(1/fmax));
 std = sqrt(var);
 fs = 3*fc;
-ts = 1/fs;
+ts = 10000/fs;
 
 t = ts*(0:(sampling_time-1));
 
 phi = zeros(sampling_time, 1);
-rand = std*randn(length(phi)-1);
-phi(1) = 0;
+random_walk = std*randn(1, length(phi)-1);
+
 for i = 1:1:length(phi)-1
-    phi(i+1) = phi(i) + rand(i);
+    phi(i+1) = phi(i) + random_walk(i);
 end
 
 lo.wave = sin(2*pi*fc*t + phi');
@@ -189,39 +193,129 @@ y = fftshift(fft(lo.wave))/sampling_time;
 fig3 = figure();
 semilogy(fs/sampling_time*(-sampling_time/2 : (sampling_time/2 -1)), abs(y));
 
-input_phase= 2*pi*rand();
-input_power= maximum_power*rand();
 
-lo.power = maximum_power;
+%% SYMBOL CALC
+input_phase= 2*pi*rand();
+input_power= maximum_field*rand();
+
+lo.field = maximum_field;
 
 phot_energy = h*fc;
-max_avg_numb_photon = maximum_power/phot_energy;
+
+maximum_power = (maximum_field*fiber_width.^2) * pi/2 %Gaussian mode
+
+max_avg_numb_photon = maximum_power/phot_energy
 
 a = rand(1, 7);
-t = linspace(-cycle_time/2, cycle_time/2, length(phi))*B;
+phi_simbol = 2*pi*rand(1,7);
 
-
+disp_h = zeros(7, length(t));
+disp_hh = zeros(1, length(t));
 
 for i = 0:1:6
-    disp_h(i+1,:) = a(i+1)*raised_cosine_impulse(t+i-3, beta, T+dT*B)';
+    disp_h(i+1,:) = a(i+1).*exp(1i*phi_simbol(i+1)).*raised_cosine_impulse(t+i-3, beta, T+dT*B)';
     disp_hh = disp_hh + disp_h(i+1,:);
 end
  
 fig10 = figure();
-plot(disp_hh, t);
+plot(abs(disp_hh), t);
+plot(angle(disp_hh), t);
+
+symbol_amp = rand();
+symbol_phase = 2*pi*rand();
+
+%symbol_in_phase = po*maximum_field*cos(input_phase)/phot_energy;
+%symbol_in_quadrature = po*maximum_field*sin(input_phase)/phot_energy;
+
 
 %% IN PHASE
-avg = trapz(sqrt(disp_hh.*lo.power).*cos(0 + phi))./length(t);
-avg_num_of_phot = avg/phot_energy;
+%avg = trapz(sqrt(disp_hh*lo.field*maximum_field)'.*cos(input_phase - (0  + phi_simbol)))./length(t);
+%I_avg_num_of_phot = avg/phot_energy;
+
+%% IN QUADRATURE
+  
+%avg = trapz(sqrt(disp_hh.*lo.field*maximum_field)'.*cos(input_phase - (90  + phi_simbol)))./length(t);
+%Q_avg_num_of_phot = avg/phot_energy;
+
+constellation = figure();
+
+%plot(symbol_in_phase/max_avg_numb_photon, symbol_in_quadrature/max_avg_numb_photon,"Color","yellow", "Marker",".", "MarkerSize", 10);
+hold on
+
+%plot(I_avg_num_of_phot/max_avg_numb_photon, Q_avg_num_of_phot/max_avg_numb_photon,"Color","green", "Marker",".", "MarkerSize", 10);
+
+for j = 1:1
+
+    a = rand(1, 7);
+    phi_simbol = 2*pi*rand(1, 7);
+    a(3) = symbol_amp;
+    phi_symbol(3) = symbol_phase;
+
+    disp_h = zeros(7, length(t));
+    disp_hh = zeros(1, length(t));
+
+    for i = 0:1:6
+        disp_h(i+1,:) = exp(1i*phi_simbol(i+1))*a(i+1)*raised_cosine_impulse(t+i-3, beta, T+dT*B)';
+        disp_hh = disp_hh + disp_h(i+1,:);
+    end
+    %% IN PHASE
+
+    lo.laser = 1*exp(1i*phi);
+    avg_p = eps*(2*pi*fiber_width/2)*trapz(abs(disp_hh*maximum_field + lo.laser').^2)*ts/phot_energy;
+    avg_m = eps*(2*pi*fiber_width/2)*trapz(abs(disp_hh*maximum_field + lo.laser').^2)*ts/phot_energy;
+
+    k_p = poissrnd(avg_p);
+    k_m = poissrnd(avg_m);
+
+    I_phot = k_p - k_m;
+   
+    %% IN QUADRATURE
+    %avg = trapz(sqrt(disp_hh.*lo.field*maximum_field)'.*cos(input_phase - (90  + phi_simbol)))./length(t);
+    %Q_avg_num_of_phot = avg/phot_energy;
+    
+    lo.laser = 1*exp(1i*(phi + pi/2));
+    avg_p = eps*(2*pi*fiber_width/2)*trapz(abs(disp_hh + lo.laser').^2)*ts/phot_energy;
+    avg_m = eps*(2*pi*fiber_width/2)*trapz(abs(disp_hh + lo.laser').^2)*ts/phot_energy;
+
+    k_p = poissrnd(avg_p);
+    k_m = poissrnd(avg_m);
+
+    Q_phot = k_p - k_m;
+    
+    %Q_phot = poissrnd(abs(Q_avg_num_of_phot))*sign(Q_avg_num_of_phot);
+    %I_phot = poissrnd(abs(I_avg_num_of_phot))*sign(I_avg_num_of_phot);
+    plot(I_phot, Q_phot,"Color","blue", "Marker",".", "MarkerSize", 10);
+
+end
+
+xlabel("In Phase")
+ylabel("In Quadrature")
+
+th = 0:pi/50:2*pi;
+xunit = cos(th);
+yunit = sin(th);
+%plot(xunit, yunit);
+
+grid on
+
+%% GAUSSIAN
+
+phase = 2*pi*rand();
+intensity = rand();
+
+figure()
+plot(intensity*cos(phase), intensity*sin(phase), Marker=".", Color="yellow", MarkerSize=20);
+hold on
+grid on
+for i = 1:1000
+
+Q = 0.2*randn()+intensity*sin(phase);
+I = 0.2*randn()+intensity*cos(phase);
+plot(I, Q, Marker=".", Color="Blue", MarkerSize=10)
 
 
 
-
-
-
-
-
-
+end
 
 
 
