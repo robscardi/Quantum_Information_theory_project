@@ -48,7 +48,7 @@ total_sign = zeros(1, length(t));
 for j = 0:(span)
     total_sign(j*sps + 1) = symbol_inphase(j+1)+1i*symbol_inquadrature(j+1) ;
     signal(j+1, j*sps +1 ) = symbol_inphase(j+1)+1i*symbol_inquadrature(j+1);
-    signal(j+1, :) = conv(base_impulse_normalized, signal(j+1, :), "same");
+    signal(j+1, :) = conv(base_impulse, signal(j+1, :), "same");
 end
 
 total_sign = conv(base_impulse_normalized, total_sign, "same");
