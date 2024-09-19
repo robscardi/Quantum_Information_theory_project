@@ -37,18 +37,47 @@ eps = (1.46).^2*eps0;
 
 
 %% PULSE SHAPING
-ts = 0.01;
-t = (-3:ts:3); % Time vector
-beta = 0.5;   % Roll-off factor
-T = 1;         % Symbol period (for example, T = 1)
+% ts = 0.01;
+% t = (-3:ts:3); % Time vector
+% beta = 0.5;   % Roll-off factor
+% T = 1;         % Symbol period (for example, T = 1)
+% 
+% sig = zeros(7, length(t));
+% hh = zeros(1, length(t));
+% 
+% for i = 0:1:6
+%     sig(i+1,:) = raised_cosine_impulse(t+i-3, beta, T)';
+%     hh = hh + sig(i+1,:);
+% end
 
-sig = zeros(7, length(t));
-hh = zeros(1, length(t));
+T = 1/B;
+beta = 0.5;
+ts = T/1000;
+span = 8;
+sps = 100;
+base_impulse = rcosdesign(beta, span, sps);
 
-for i = 0:1:6
-    sig(i+1,:) = raised_cosine_impulse(t+i-3, beta, T)';
-    hh = hh + sig(i+1,:);
+symbols = ones(span);
+
+t = linspace(-((span+1)/2)*T,  ((span+1)/2)*T, sps*span +1);
+base_impulse = base_impulse/max(base_impulse);
+signal = zeros(span+1, length(t));
+total_sign = zeros(1, length(t));
+
+for i = 0:(span)
+    total_sign(i*sps + 1) = 1;
+    signal(i+1, i*sps +1 ) = 1;
+    signal(i+1, :) = conv(base_impulse, signal(i+1, :), "same");
 end
+
+total_sign = conv(base_impulse, total_sign, "same");
+
+figure
+hold on
+plot(t, total_sign)
+plot(t, signal)
+
+
 
 %% DISPERSION SIMULATION
 
