@@ -13,11 +13,11 @@ mW = 1e-3;
 
 
 symbol = (1+1i)/(sqrt(2));
-B = 25e9;
+B = 400e6;
 c = 299792458;
 
 T = 1/B;
-sps = 200;
+sps = 300;
 ts = T/sps;
 span = 16;
 
@@ -25,65 +25,70 @@ total_duration = span*T;
 fs = 1/ts;
 L = span*sps;
 f = fs/L*(-L/2:L/2-1);
-obs_time = 5*ps; 
+obs_time = 8*ts; 
 
 %% LO DATA
 lo.linewidth = 1*MHz;
 lo.PSD = -80;
 lo.lambda = 1550*nm;
-lo.field = 1e9;
+lo.field = 3e6;
 fc = c/lo.lambda;
 
 lambda_vector = c./(f+fc);
 
-Communication_lenght = 1000*km;
+Communication_lenght = 9*km;
 
-    materials = {'sm800core'; 'silica'};
-    fibre = struct(...
-    'materials', {materials});
+    % materials = {'sm800core'; 'silica'};
+    % fibre = struct(...
+    % 'materials', {materials});
+    % 
+    % argument = struct(...
+    % 'type', 'wvl',... % calculate vs. wavelength
+    % 'harmonic', 1,... % required
+    % 'min', 1400,... % calculate from
+    % 'max', 2000 ...
+    % ); % calculate to
+    % 
+    % modeTask = struct(...
+    % 'nu', [0],... % first modal index
+    % 'type', {'te'},... % mode types
+    % 'maxmode', 1,... % how many modes of each type and NU to calculate
+    % 'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+    % %'region', 'cladding');
+    % 
+    % infomode = false;
+    % 
+    % modes = buildModes(argument, fibre, modeTask, infomode);
+    % 
+    % neff = modes.NEFF;
+    % l = modes.ARG;
+    % 
+    % neff_interpolated = interp1(l, neff, lambda_vector/nm);
+    % beta = zeros(size(f));
+    % 
+    % 
+    % for i = 1:length(lambda_vector)
+    %     neff_ = neff_interpolated(i);
+    %     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+    % end
+    D = (20*ps/(nm*km));
+    beta = D*((lo.lambda.*(f+ fc)).^2)
 
-    argument = struct(...
-    'type', 'wvl',... % calculate vs. wavelength
-    'harmonic', 1,... % required
-    'min', 1400,... % calculate from
-    'max', 2000 ...
-    ); % calculate to
-
-    modeTask = struct(...
-    'nu', [0],... % first modal index
-    'type', {'te'},... % mode types
-    'maxmode', 1,... % how many modes of each type and NU to calculate
-    'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
-    %'region', 'cladding');
-
-    infomode = false;
-
-    modes = buildModes(argument, fibre, modeTask, infomode);
-
-    neff = modes.NEFF;
-    l = modes.ARG;
-
-    neff_interpolated = interp1(l, neff, lambda_vector/nm);
-    beta = zeros(size(f));
-
-
-    for i = 1:length(lambda_vector)
-        neff_ = neff_interpolated(i);
-        beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-    end
-
-    ff = exp(1i*beta*Communication_lenght);
+    ff = exp(-1i*beta*Communication_lenght);
     
     tt = ifft(ff)/L;
 
 D = parallel.pool.PollableDataQueue;
 
-num_test = 1000;
+num_test = 100000;
 tic;
-for k =1:num_test
-    [x, y]= optical_channel_func(lo, 16, symbol, 1e8, 25e9, sps, 1, tt, obs_time);
+parfor k =1:num_test
+    symbols = 1*rand(1,span+1) + i1*rand(1, span+1)
+    symbols(span/2 +1 ) = symbol;
+    [x, y]= optical_channel_func(lo, 16, symbols, 1e5, 25e9, sps, 1, tt, obs_time);
     send(D, x+1i*y);
 end
+
 toc
 
 

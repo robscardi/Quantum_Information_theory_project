@@ -1,4 +1,4 @@
-function [quadrature, phase] = optical_channel_func(lo, span, symbol, maximum_field,symbol_rate, samples_per_symbol, eta, dispesion_array, obs_time)
+function [quadrature, phase] = optical_channel_func(lo,beta, span, symbols, maximum_field,symbol_rate, samples_per_symbol, sample_num, eta, dispesion_array, obs_time)
 
 assert(span> 0 && bitand(span, span - 1) == 0,"span is not a power of two");
 
@@ -25,33 +25,24 @@ phot_energy = h*fc;
 %% PULSE SHAPING
 
 T = 1/B;
-beta = 0.5;
 sps = samples_per_symbol;
 ts = T/sps;
 base_impulse = rcosdesign(beta, span, sps);
 
-
-
 base_impulse_normalized = base_impulse/(max(abs(fft(base_impulse))));
-
-symbol_inphase = 1*rand(1,span+1);
-symbol_inquadrature = 1*rand(1, span+1);
-symbol_inphase(span/2 +1 ) = real(symbol);
-symbol_inquadrature(span/2 +1) = imag(symbol); 
-
 
 t = linspace(-((span+1)/2)*T,  ((span+1)/2)*T, sps*span +1);
 
-signal = zeros(span+1, length(t));
+%signal = zeros(span+1, length(t));
 total_sign = zeros(1, length(t));
 
 for j = 0:(span)
-    total_sign(j*sps + 1) = symbol_inphase(j+1)+1i*symbol_inquadrature(j+1) ;
-    signal(j+1, j*sps +1 ) = symbol_inphase(j+1)+1i*symbol_inquadrature(j+1);
-    signal(j+1, :) = conv(base_impulse, signal(j+1, :), "same");
+    total_sign(j*sps + 1) = symbols(j+1);
+    %signal(j+1, j*sps +1 ) = symbols(j+1);
+    %signal(j+1, :) = conv(base_impulse, signal(j+1, :), "same");
 end
 
-total_sign = conv(base_impulse_normalized, total_sign, "same");
+total_sign = conv(base_impulse, total_sign, "same");
 
 %energy_begin = trapz(abs(total_sign).^2)
 
@@ -75,9 +66,6 @@ D = 10^(lo.PSD/10);
 var = D*((1/fmin)-(1/fmax));
 std = sqrt(var);
 
-sample_num = ceil(obs_time/ts);
-sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sample_num+1); 
-
 phi = zeros(1, sample_num+1);
 random_walk = std*randn(1, length(phi)-1);
 
@@ -91,8 +79,8 @@ end
     symbol_sample = filtered(middle-half_sample_num: middle+half_sample_num);
     %% IN PHASE
     lo.laser = lo.field*exp(1i*phi);
-    avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.laser).^2)*ts/phot_energy;
-    avg_m = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field - lo.laser).^2)*ts/phot_energy;
+    avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.laser).^2)*ts/phot_energy/obs_time;
+    avg_m = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field - lo.laser).^2)*ts/phot_energy/obs_time;
 
     k_p = poissrnd(avg_p);
     k_m = poissrnd(avg_m);
@@ -102,8 +90,8 @@ end
     %% IN QUADRATURE
 
     lo.laser = lo.field*exp(1i*(phi + pi/2));
-    avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.laser).^2)*ts/phot_energy;
-    avg_m = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field - lo.laser).^2)*ts/phot_energy;
+    avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.laser).^2)*ts/phot_energy/obs_time;
+    avg_m = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field - lo.laser).^2)*ts/phot_energy/obs_time;
 
     k_p = poissrnd(avg_p);
     k_m = poissrnd(avg_m);
