@@ -38,41 +38,42 @@ lambda_vector = c./(f+fc);
 
 Communication_lenght = 9*km;
 
-    % materials = {'sm800core'; 'silica'};
-    % fibre = struct(...
-    % 'materials', {materials});
-    % 
-    % argument = struct(...
-    % 'type', 'wvl',... % calculate vs. wavelength
-    % 'harmonic', 1,... % required
-    % 'min', 1400,... % calculate from
-    % 'max', 2000 ...
-    % ); % calculate to
-    % 
-    % modeTask = struct(...
-    % 'nu', [0],... % first modal index
-    % 'type', {'te'},... % mode types
-    % 'maxmode', 1,... % how many modes of each type and NU to calculate
-    % 'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
-    % %'region', 'cladding');
-    % 
-    % infomode = false;
-    % 
-    % modes = buildModes(argument, fibre, modeTask, infomode);
-    % 
-    % neff = modes.NEFF;
-    % l = modes.ARG;
-    % 
-    % neff_interpolated = interp1(l, neff, lambda_vector/nm);
-    % beta = zeros(size(f));
-    % 
-    % 
-    % for i = 1:length(lambda_vector)
-    %     neff_ = neff_interpolated(i);
-    %     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-    % end
+    materials = {'sm800core'; 'silica'};
+    fibre = struct(...
+    'materials', {materials});
+
+    argument = struct(...
+    'type', 'wvl',... % calculate vs. wavelength
+    'harmonic', 1,... % required
+    'min', 1400,... % calculate from
+    'max', 2000 ...
+    ); % calculate to
+
+    modeTask = struct(...
+    'nu', [0],... % first modal index
+    'type', {'te'},... % mode types
+    'maxmode', 1,... % how many modes of each type and NU to calculate
+    'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+    %'region', 'cladding');
+
+    infomode = false;
+
+    modes = buildModes(argument, fibre, modeTask, infomode);
+
+    neff = modes.NEFF;
+    l = modes.ARG;
+
+    neff_interpolated = interp1(l, neff, lambda_vector/nm);
+    beta = zeros(size(f));
+
+    central_neff = neff_interpolated(length(lambda_vector)/2);
+    for i = 1:length(lambda_vector)
+        neff_ = neff_interpolated(i) - central_neff;
+        beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+    end
+
     D = (20*ps/(nm*km));
-    beta = D*((lo.lambda.*(f+ fc)).^2)
+    beta_c = D*((lo.lambda.*f).^2*pi/c);
 
     ff = exp(-1i*beta*Communication_lenght);
     

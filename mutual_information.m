@@ -29,14 +29,14 @@ end
 
 %% Calcolo H(y|x):
 
-H_y_x = 0
-[c,r] = size(prob_matrix)
+H_y_x = 0;
+[c,r] = size(prob_matrix);
 
 for x = 1:c
     temp = 0;
     for y = 1:r 
-        t = - prob_matrix(x,y)*log2(prob_matrix(x,y))
-        if isnan(t) == 1
+        t = - prob_matrix(x,y)*log2(prob_matrix(x,y));
+        if isnan(t)
             t = 0;
         end 
         temp = temp + t;

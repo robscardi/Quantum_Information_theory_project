@@ -42,7 +42,7 @@ for j = 0:(span)
     %signal(j+1, :) = conv(base_impulse, signal(j+1, :), "same");
 end
 
-total_sign = conv(base_impulse, total_sign, "same");
+total_sign = conv(base_impulse/max(base_impulse), total_sign, "same");
 
 %energy_begin = trapz(abs(total_sign).^2)
 
