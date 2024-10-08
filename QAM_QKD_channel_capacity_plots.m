@@ -11,8 +11,6 @@ km = 1e3;
 ps = 1e-12;
 mW = 1e-3;
 
-
-
 B = 400e6;
 c = 299792458;
 h = 6.62607015e-34;
@@ -49,14 +47,13 @@ phot_energy = h*fc;
 sample_num = ceil(obs_time/ts);
 sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sample_num+1);
 
-N_e_vector = 20;
-E_vector = linspace(1e1, 5e2, N_e_vector);
+N_e_vector = 30;
+E_vector = linspace(1e1, 1e4, N_e_vector);
 MI_vector = zeros(1,N_e_vector);
 
 
-
 %% CONSTELLATION DATA
-n_bit = 4;
+n_bit = 10;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
