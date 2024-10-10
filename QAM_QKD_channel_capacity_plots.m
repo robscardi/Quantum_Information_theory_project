@@ -93,10 +93,10 @@ Communication_lenght = 9*km;
 %     beta = zeros(size(f));
 
 
-    % for i = 1:length(lambda_vector)
-    %     neff_ = neff_interpolated(i);
-    %     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-    % end
+% for i = 1:length(lambda_vector)
+%     neff_ = neff_interpolated(i);
+%     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+% end
 
     D = 0*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);

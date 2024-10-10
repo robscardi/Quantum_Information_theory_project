@@ -1,20 +1,21 @@
-g = zeros(6, length(x));
-q = zeros(6, length(x));
+clear variables
+close all
+g = zeros(9, 30);
+q = zeros(9, 30);
 
-for i=2:6
+x = 2:10;
+
+for i=2:10
 a = load("Figures\"+ i +"_bit_0_disp_9_km.mat");
 g(i,:) = a(1).MI_vector;
 a = load("Figures\QBER_"+ i +"_bit_0_disp_9_km.mat");
 q(i,:) = a(1).QBER;
 end
 
-C_h = ((max_phot+1).*log2(max_phot+1)- (max_phot).*log2(max_phot))*0.5;
-C_s2 = log2(1+2*max_phot)*0.5;
-
 for j = 1:length(g(:,1))
-    x(j) = mean(g(j, 30-4:end));
+    y(j) = mean(g(j, 30-4:end));
 end
-y = 2:10;
+y = y(2:end);
 % Plot the data
 figure;
 plot(x, y, 'o-', 'LineWidth', 2);
@@ -32,7 +33,7 @@ for i = 1:length(x)-1
     
     % Annotate the difference in y-values
     dy = abs(y2 - y1);
-    text(x1 + 0.2, (y1 + y2) / 2, ['\Delta y = ' num2str(dy)], 'Color', 'r', 'FontSize', 12);
+    text(x1 + 0.06, (y1 + y2) / 2 +0.1, ['\Delta y = ' num2str(dy)], 'Color', 'r', 'FontSize', 12);
 end
 
 % Optionally, add labels

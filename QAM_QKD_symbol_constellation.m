@@ -1,6 +1,12 @@
 close all
 clear variables
 
+%To modify the symbol in consideration: line 18
+%To modify the local oscillator (laser) parameters: line 45
+%To modify dispesion: line 130
+%To modify constellation parameter (n bit): line 60
+%To modify observation time: line 
+
 %% UNIT OF MEASURMENT
 um = 1e-6;
 nm = 1e-9;
@@ -11,6 +17,7 @@ km = 1e3;
 ps = 1e-12;
 mW = 1e-3;
 
+%% CONSTANTS
 symbol = (-1+17i);
 B = 400e6;
 c = 299792458;
@@ -34,7 +41,7 @@ f = fs/L*(-L/2:L/2-1);
 obs_time = 10*ts;
 b = 0.2;
 eta = 1;
-maximum_field = 1e1;
+maximum_field = 1e1; %Incoming signal field
 
 %% LO DATA
 lo.linewidth = 1*kHz;
@@ -56,9 +63,8 @@ total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
 max_symbol = max(symbol_vec);
 
-% %% TEST MAXIMUM N PHOTON
-
-% 
+%% TEST AVG NUMBER OF PHOTON FOR 1+0i SYMBOL
+% FOR UNCALIBRATED DETECTION
 middle = sps*span/2 +1;
 half_sample_num = ceil(sample_num/2);
 
@@ -67,12 +73,12 @@ base_impulse_normalized = base_impulse/(max(abs(fft(base_impulse))));
 
 arrival_impulse = conv(base_impulse, base_impulse_normalized, "same");
 
-%arrival_impulse_energy = trapz(abs(arrival_impulse).^2);
+%arrival_impulse_energy = trapz(abs(arrival_impulse).^2); %test symbol
+%energy
 symbol_sample = arrival_impulse(middle-half_sample_num: middle+half_sample_num);
 
-
 %figure
-%plot(arrival_impulse)
+%plot(arrival_impulse) 
 avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.field).^2)*ts/phot_energy/obs_time;
 avg_m = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field - lo.field).^2)*ts/phot_energy/obs_time;
 
@@ -83,13 +89,51 @@ max_phot_p = (avg_p-avg_m);
 lambda_vector = c./(f+fc);
 Communication_lenght = 9*km;
 
-    D = 20*(ps/(nm*km));
-    beta = D*((lo.lambda.*f).^2*pi/c);
-    %beta(length(f)/2+1:end) = -beta(length(f)/2+1:end);
+% Calculation for optical fibre effective refractive index
+% for this snippet to work, download
+% https://it.mathworks.com/matlabcentral/fileexchange/27819-optical-fibre-toolbox
+% and add to path
+% materials = {'sm800core'; 'silica'};
+%     fibre = struct(...
+%     'materials', {materials});
+% 
+%     argument = struct(...
+%     'type', 'wvl',... % calculate vs. wavelength
+%     'harmonic', 1,... % required
+%     'min', 1400,... % calculate from
+%     'max', 2000 ...
+%     ); % calculate to
+% 
+%     modeTask = struct(...
+%     'nu', [0],... % first modal index
+%     'type', {'te'},... % mode types
+%     'maxmode', 1,... % how many modes of each type and NU to calculate
+%     'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+%     %'region', 'cladding');
+% 
+%     infomode = false;
+% 
+%     modes = buildModes(argument, fibre, modeTask, infomode);
+% 
+%     neff = modes.NEFF;
+%     l = modes.ARG;
+% 
+%     neff_interpolated = interp1(l, neff, lambda_vector/nm);
+%     beta = zeros(size(f));
 
-    ff = exp(-1i*beta*Communication_lenght);
+
+% for i = 1:length(lambda_vector)
+%     neff_ = neff_interpolated(i);
+%     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+% end
     
-    tt = ifftshift(ifft(ff));
+% MODIFY TO REGULATE DISPERSION
+D = 20*(ps/(nm*km));
+beta = D*((lo.lambda.*f).^2*pi/c);
+
+ff = exp(-1i*beta*Communication_lenght);
+
+tt = ifftshift(ifft(ff));
 
 PPD = parallel.pool.PollableDataQueue;
 
@@ -122,7 +166,13 @@ for k = 1:num_test
 end
 
 scatter(inphase, inquadrature, Color="blue");
+toc
 
+%% COMMENT: UNCALIBRATE DETECTION 
+% TO SEE THE EFFECT OF DISPERSION WITHOUT THE CALIBRATION RUN, 
+% USING ONLY THE EXPECTED MEAN (DOESN'T RISULT IN CORRECT VALUES FOR HIGH
+% DISPERSION
+ 
 % inphase_freq = zeros(1,length(symbol_vec));
 % inquadr_freq = zeros(1,length(symbol_vec));
 
@@ -141,7 +191,6 @@ scatter(inphase, inquadrature, Color="blue");
 %     [~, index] = find(inquad == symbol_vec(k));
 %     inquadr_freq(k) = length(index);
 % end
-toc
 
 % figure
 % title("Uncalibrated Distribution")
@@ -213,12 +262,13 @@ end
 figure
 hold on
 title("Calibrated distribution")
-plot(symbol_vec, t_inphase_freq)
-plot(symbol_vec, t_inquadr_freq)
+plot(symbol_vec, t_inphase_freq, DisplayName="Inphase")
+plot(symbol_vec, t_inquadr_freq, DisplayName="Inquadr")
+legend on
 
 figure
 hold on
-title("Calibrated constellation")
+title("Calibrated constellation : " + 2^n_bit + "QAM")
 plot(real(total_symbols), imag(total_symbols), '*', 'MarkerFaceColor', 'y', 'MarkerSize', 6);
 scatter(inphase/t_mean_inphase, inquadrature/t_mean_inquadrature, 'blue')
 grid on

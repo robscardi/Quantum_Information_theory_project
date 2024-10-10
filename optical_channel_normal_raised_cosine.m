@@ -1,3 +1,4 @@
+%% ORIGINAL OPTICAL CHANNEL WITH NORMAL RAISED_COSINE
 close all
 clear variables
 
