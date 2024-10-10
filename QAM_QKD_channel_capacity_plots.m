@@ -48,12 +48,11 @@ sample_num = ceil(obs_time/ts);
 sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sample_num+1);
 
 N_e_vector = 30;
-E_vector = linspace(1e1, 1e4, N_e_vector);
+E_vector = linspace(1e1, 5e2, N_e_vector);
 MI_vector = zeros(1,N_e_vector);
 
-
 %% CONSTELLATION DATA
-n_bit = 10;
+n_bit = 5;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
@@ -65,39 +64,39 @@ num_test = 1000;
 lambda_vector = c./(f+fc);
 Communication_lenght = 9*km;
     
-materials = {'sm800core'; 'silica'};
-    fibre = struct(...
-    'materials', {materials});
+% materials = {'sm800core'; 'silica'};
+%     fibre = struct(...
+%     'materials', {materials});
+% 
+%     argument = struct(...
+%     'type', 'wvl',... % calculate vs. wavelength
+%     'harmonic', 1,... % required
+%     'min', 1400,... % calculate from
+%     'max', 2000 ...
+%     ); % calculate to
+% 
+%     modeTask = struct(...
+%     'nu', [0],... % first modal index
+%     'type', {'te'},... % mode types
+%     'maxmode', 1,... % how many modes of each type and NU to calculate
+%     'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+%     %'region', 'cladding');
+% 
+%     infomode = false;
+% 
+%     modes = buildModes(argument, fibre, modeTask, infomode);
+% 
+%     neff = modes.NEFF;
+%     l = modes.ARG;
+% 
+%     neff_interpolated = interp1(l, neff, lambda_vector/nm);
+%     beta = zeros(size(f));
 
-    argument = struct(...
-    'type', 'wvl',... % calculate vs. wavelength
-    'harmonic', 1,... % required
-    'min', 1400,... % calculate from
-    'max', 2000 ...
-    ); % calculate to
 
-    modeTask = struct(...
-    'nu', [0],... % first modal index
-    'type', {'te'},... % mode types
-    'maxmode', 1,... % how many modes of each type and NU to calculate
-    'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
-    %'region', 'cladding');
-
-    infomode = false;
-
-    modes = buildModes(argument, fibre, modeTask, infomode);
-
-    neff = modes.NEFF;
-    l = modes.ARG;
-
-    neff_interpolated = interp1(l, neff, lambda_vector/nm);
-    beta = zeros(size(f));
-
-
-    for i = 1:length(lambda_vector)
-        neff_ = neff_interpolated(i);
-        beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-    end
+    % for i = 1:length(lambda_vector)
+    %     neff_ = neff_interpolated(i);
+    %     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+    % end
 
     D = 0*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);
@@ -218,7 +217,6 @@ for g =1:N_e_vector
     N = sum(X_p);
 
     X_p = X_p/N; 
-    X_p = ones(1, length(symbol_vec))/length(symbol_vec);
 
     MI_Phase = mutual_information(X_p, cross_prob_matrix_p);
     MI_Quadr = mutual_information(X_p, cross_prob_matrix_q);

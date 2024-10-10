@@ -11,8 +11,7 @@ km = 1e3;
 ps = 1e-12;
 mW = 1e-3;
 
-
-symbol = (-17+17i);
+symbol = (-1+17i);
 B = 400e6;
 c = 299792458;
 h = 6.62607015e-34;
@@ -35,13 +34,13 @@ f = fs/L*(-L/2:L/2-1);
 obs_time = 10*ts;
 b = 0.2;
 eta = 1;
-maximum_field = 1e4;
+maximum_field = 1e1;
 
 %% LO DATA
 lo.linewidth = 1*kHz;
 lo.PSD = -40;
 lo.lambda = 1550*nm;
-lo.field = 1e7;
+lo.field = 1e3;
 fc = c/lo.lambda;
 
 phot_energy = h*fc;
@@ -82,7 +81,7 @@ max_phot_p = (avg_p-avg_m);
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 0.1*km;
+Communication_lenght = 9*km;
 
     D = 20*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);
@@ -220,8 +219,9 @@ plot(symbol_vec, t_inquadr_freq)
 figure
 hold on
 title("Calibrated constellation")
-scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
+plot(real(total_symbols), imag(total_symbols), '*', 'MarkerFaceColor', 'y', 'MarkerSize', 6);
 scatter(inphase/t_mean_inphase, inquadrature/t_mean_inquadrature, 'blue')
+grid on
 
 
 function [s] = decode_qam(symbol, max_symbol)
