@@ -37,7 +37,7 @@ maximum_field = 1e1;
 
 %% LO DATA
 lo.linewidth = 1*kHz;
-lo.PSD = -inf;
+lo.PSD = -80;
 lo.lambda = 1550*nm;
 lo.field = 1e1;
 fc = c/lo.lambda;
