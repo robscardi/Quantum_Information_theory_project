@@ -5,7 +5,7 @@ clear variables
 %To modify the local oscillator (laser) parameters: line 45
 %To modify dispesion: line 130
 %To modify constellation parameter (n bit): line 60
-%To modify observation time: line 
+%To modify observation time: line 41
 
 %% UNIT OF MEASURMENT
 um = 1e-6;
@@ -133,7 +133,7 @@ beta = D*((lo.lambda.*f).^2*pi/c);
 
 ff = exp(-1i*beta*Communication_lenght);
 
-tt = ifftshift(ifft(ff));
+tt = ifftshift(ifft(ff/max(abs(ff))));
 
 PPD = parallel.pool.PollableDataQueue;
 
@@ -173,41 +173,41 @@ toc
 % USING ONLY THE EXPECTED MEAN (DOESN'T RISULT IN CORRECT VALUES FOR HIGH
 % DISPERSION
  
-% inphase_freq = zeros(1,length(symbol_vec));
-% inquadr_freq = zeros(1,length(symbol_vec));
+inphase_freq = zeros(1,length(symbol_vec));
+inquadr_freq = zeros(1,length(symbol_vec));
 
-% 
-% mean_inphase = mean(inphase);
-% mean_inquadrature = mean(inquadrature);
-% 
-% s = decode_qam(syms/max_phot_p, max_symbol);
-%     inphas = s(1,:);
-%     inquad = s(2,:);
-% 
-% for k = 1:length(symbol_vec)
-%     [~, index] = find(inphas == symbol_vec(k));
-%     inphase_freq(k) = length(index);
-% 
-%     [~, index] = find(inquad == symbol_vec(k));
-%     inquadr_freq(k) = length(index);
-% end
 
-% figure
-% title("Uncalibrated Distribution")
-% hold on
-% plot(symbol_vec, inphase_freq)
-% plot(symbol_vec, inquadr_freq)
-% 
-% figure 
-% title("Hard Decoding Uncalibrated")
-% hold on
-% scatter(inphas, inquad)
-% 
-% figure
-% hold on 
-% title("Uncalibrated Constellation")
-% scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
-% scatter(inphase/max_phot_p, inquadrature/max_phot_p, 'blue')
+mean_inphase = mean(inphase);
+mean_inquadrature = mean(inquadrature);
+
+s = decode_qam(syms/max_phot_p, max_symbol);
+    inphas = s(1,:);
+    inquad = s(2,:);
+
+for k = 1:length(symbol_vec)
+    [~, index] = find(inphas == symbol_vec(k));
+    inphase_freq(k) = length(index);
+
+    [~, index] = find(inquad == symbol_vec(k));
+    inquadr_freq(k) = length(index);
+end
+
+figure
+title("Uncalibrated Distribution")
+hold on
+plot(symbol_vec, inphase_freq)
+plot(symbol_vec, inquadr_freq)
+
+figure 
+title("Hard Decoding Uncalibrated")
+hold on
+scatter(inphas, inquad)
+
+figure
+hold on 
+title("Uncalibrated Constellation")
+scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
+scatter(inphase/max_phot_p, inquadrature/max_phot_p, 'blue')
 
 
 %% CALIBRATION RUN

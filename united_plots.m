@@ -68,12 +68,13 @@ max_phot = (avg_p-avg_m);
 
 g = zeros(10, length(x));
 q = zeros(10, length(x));
+data_string = "0_disp_9_km_1khz_-80dbm";
 
 for i=2:10
-a = load("Figures\"+ i +"_bit_0_disp_9_km.mat");
-g(i,:) = a(1).MI_vector;
-a = load("Figures\QBER_"+ i +"_bit_0_disp_9_km.mat");
-q(i,:) = a(1).QBER;
+    a = load("Data\"+data_string + "\" + i +"_bit_"+data_string+".mat");
+    g(i,:) = a(1).MI_vector;
+    a = load("Data\"+data_string + "\" + "QBER_"+ i +"_bit_"+data_string+".mat");
+    q(i,:) = a(1).QBER;
 end
 
 C_h = ((max_phot+1).*log2(max_phot+1)- (max_phot).*log2(max_phot))*0.5;
