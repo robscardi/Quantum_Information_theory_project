@@ -128,12 +128,12 @@ Communication_lenght = 9*km;
 % end
     
 % MODIFY TO REGULATE DISPERSION
-D = 20*(ps/(nm*km));
+D = 2*(ps/(nm*km));
 beta = D*((lo.lambda.*f).^2*pi/c);
 
 ff = exp(-1i*beta*Communication_lenght);
 
-tt = ifftshift(ifft(ff/max(abs(ff))));
+tt = fftshift(fft(ff/length(ff)));
 
 PPD = parallel.pool.PollableDataQueue;
 
