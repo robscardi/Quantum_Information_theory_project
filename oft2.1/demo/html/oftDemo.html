@@ -1,0 +1,317 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Optical Fibre Toolbox two-layer demo</title><meta name="generator" content="MATLAB 7.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2011-12-08"><meta name="DC.source" content="oftDemo.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><h1>Optical Fibre Toolbox two-layer demo</h1><!--introduction--><p>This script demonstrates the use of Optical Fibre Toolbox functions for calculation of two-layer fibres modes.</p><p>(cc-by) K. Karapetyan et al., AG Meschede, Uni Bonn, 2008--2011</p><p><a href="mailto:kotya.karapetyan@gmail.com">kotya.karapetyan@gmail.com</a>, <a href="http://agmeschede.iap.uni-bonn.de">http://agmeschede.iap.uni-bonn.de</a></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Specify the fibre parameters</a></li><li><a href="#3">Create the task for dispersion curves calculation</a></li><li><a href="#4">Find guided modes and calculate the dispersion curves</a></li><li><a href="#5">Field distribution</a></li><li><a href="#6">Mode dispersion in a nanofibre</a></li></ul></div><pre class="codeinput">clc
+clear
+close <span class="string">all</span>
+
+tStart = tic;
+addpath(<span class="string">'..'</span>)
+fprintf(<span class="string">'%s\n'</span>, <span class="string">'Calculating...'</span>);
+</pre><pre class="codeoutput">Calculating...
+</pre><h2>Specify the fibre parameters<a name="2"></a></h2><pre class="codeinput"><span class="comment">% Note: diameter is specified in micrometers, wavelength in nanometers</span>
+
+<span class="comment">% Fibre materials (core, cladding)</span>
+materials = {<span class="string">'sm800core'</span>; <span class="string">'silica'</span>};
+
+<span class="comment">% Fibre structure description</span>
+fibre = struct(<span class="keyword">...</span>
+    <span class="string">'materials'</span>, {materials});
+</pre><h2>Create the task for dispersion curves calculation<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Argument for dispersion curves calculation</span>
+argument = struct(<span class="keyword">...</span>
+    <span class="string">'type'</span>, <span class="string">'wvl'</span>,<span class="keyword">...</span><span class="comment"> % calculate vs. wavelength</span>
+    <span class="string">'harmonic'</span>, 1,<span class="keyword">...</span><span class="comment"> % required</span>
+    <span class="string">'min'</span>, 600,<span class="keyword">...</span><span class="comment"> % calculate from</span>
+    <span class="string">'max'</span>, 1000); <span class="comment">% calculate to</span>
+
+<span class="comment">% Specify which modes to search for</span>
+modeTask = struct(<span class="keyword">...</span>
+    <span class="string">'nu'</span>, [0 1 2],<span class="keyword">...</span><span class="comment"> % first modal index</span>
+    <span class="string">'type'</span>, {{<span class="string">'hybrid'</span>, <span class="string">'te'</span>, <span class="string">'tm'</span>}},<span class="keyword">...</span><span class="comment"> % mode types</span>
+    <span class="string">'maxmode'</span>, 3,<span class="keyword">...</span><span class="comment"> % how many modes of each type and NU to calculate</span>
+    <span class="string">'diameter'</span>, 5.6);<span class="comment">%,... % parameter, structure diameter, if argument is wavelength</span>
+    <span class="comment">%'region', 'cladding');</span>
+</pre><h2>Find guided modes and calculate the dispersion curves<a name="4"></a></h2><pre class="codeinput">infomode = false;
+modes = buildModes(argument, fibre, modeTask, infomode);
+
+<span class="comment">% Display calculated dispersion curves</span>
+showModes(modes, <span class="string">'Modal dispersion in a fibre'</span>);
+
+<span class="comment">% Show which modes have been calculated</span>
+fprintf(<span class="string">'Modes found:\n'</span>);
+<span class="keyword">for</span> i = 1:numel(modes)
+   fprintf(<span class="string">'%s\n'</span>, modeDescription(modes(i), infomode));
+<span class="keyword">end</span>
+
+<span class="comment">% This fibre has a very low refractive index step between (0.005) and is</span>
+<span class="comment">% therefore weakly guiding. In a weakly guided fibre, modes HE21, TE01 and</span>
+<span class="comment">% TM01 lie very close to each other as can be seen in the picture. In the</span>
+<span class="comment">% weakly guidance approximation, the mode HE11 is sometimes denoted as LP01</span>
+<span class="comment">% mode and the HE21, TM01, TE01 mode triplet as LP21 mode.</span>
+</pre><pre class="codeoutput">Modes found:
+HE 1 1 (1 hrm.)
+HE 2 1 (1 hrm.)
+TE 0 1 (1 hrm.)
+TM 0 1 (1 hrm.)
+</pre><img vspace="5" hspace="5" src="oftDemo_01.png" alt=""> <h2>Field distribution<a name="5"></a></h2><pre class="codeinput">poiType = <span class="string">'wvl'</span>;
+poi = 900;
+par = 5.6;
+task = struct(<span class="string">'modetype'</span>, <span class="string">'HYBRID'</span>, <span class="string">'modeindex'</span>, [1 1]);
+infomode = false;
+getWholeMode = false;
+n = neff(poiType, poi, par, fibre, task, infomode, getWholeMode);
+
+<span class="comment">%</span>
+d = par;
+window = 3 * d;
+lambda = poi;
+Nr = [500, 1000]; <span class="comment">% inn, out</span>
+Nphi = [64, 64]; <span class="comment">% inn, out</span>
+dr_inn = d/2 / Nr(1);
+dr_out = (window/2 - d/2) / Nr(2);
+
+dphi_inn = 2 * pi / Nphi(1);
+dphi_out = 2 * pi / Nphi(2);
+
+F = struct(<span class="string">'dr'</span>, [dr_inn dr_out], <span class="string">'dphi'</span>, [dphi_inn dphi_out], <span class="keyword">...</span>
+    <span class="string">'diam'</span>, [d window], <span class="string">'E1'</span>, [], <span class="string">'H1'</span>, [], <span class="string">'E2'</span>, [], <span class="string">'H2'</span>, []);
+FG = fieldGrid(F);
+[F.E1, F.H1] = modeField(lambda, d, n, fibre, task, FG.R1, FG.PHI1);
+[F.E2, F.H2] = modeField(lambda, d, n, fibre, task, FG.R2, FG.PHI2);
+F.FG = FG;
+
+displayField2(F, d)
+</pre><img vspace="5" hspace="5" src="oftDemo_02.png" alt=""> <img vspace="5" hspace="5" src="oftDemo_03.png" alt=""> <h2>Mode dispersion in a nanofibre<a name="6"></a></h2><p>Calculate mode dispersion diagram for a fixed wavelength and varying fibre diameter</p><p>Specify the fibre parameters</p><pre class="codeinput">materials = {<span class="string">'silica'</span>; <span class="string">'air'</span>};
+
+nanofibre = struct(<span class="keyword">...</span>
+    <span class="string">'materials'</span>, {materials});
+
+argument = struct(<span class="keyword">...</span>
+    <span class="string">'type'</span>, <span class="string">'dia'</span>,<span class="keyword">...</span><span class="comment"> % calculate vs. wavelength</span>
+    <span class="string">'min'</span>, 0.1,<span class="keyword">...</span><span class="comment"> % calculate from</span>
+    <span class="string">'max'</span>, 1); <span class="comment">% calculate to</span>
+
+modeTask = struct(<span class="keyword">...</span>
+    <span class="string">'nu'</span>, [0 1 2],<span class="keyword">...</span><span class="comment"> % first modal index</span>
+    <span class="string">'type'</span>, {{<span class="string">'hybrid'</span>, <span class="string">'te'</span>, <span class="string">'tm'</span>}},<span class="keyword">...</span><span class="comment"> % mode types</span>
+    <span class="string">'maxmode'</span>, 3,<span class="keyword">...</span><span class="comment"> % how many modes of each type and NU to calculate</span>
+    <span class="string">'lambda'</span>, 900);<span class="comment">%,... % parameter, structure diameter, if argument is wavelength</span>
+    <span class="comment">%'region', 'cladding');</span>
+
+modes = buildModes(argument, nanofibre, modeTask, false);
+</pre><p>Display calculated dispersion curves</p><pre class="codeinput">figure;
+showModes(modes, <span class="string">'Modal dispersion in a nanofibre'</span>);
+</pre><img vspace="5" hspace="5" src="oftDemo_04.png" alt=""> <p>Show which modes have been calculated</p><pre class="codeinput">fprintf(<span class="string">'Modes found:\n'</span>);
+<span class="keyword">for</span> i = 1:numel(modes)
+   fprintf(<span class="string">'%s\n'</span>, modeDescription(modes(i), false));
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Modes found:
+HE 1 1 (1 hrm.)
+HE 2 1 (1 hrm.)
+TE 0 1 (1 hrm.)
+TM 0 1 (1 hrm.)
+</pre><p>Unlike in the weakly guidance example above, this nanofibre has a high refractive index step (about 0.5) and is therefore strongly guiding. All four modes HE11, HE21, TE01 and TM01 are therefore clearly distinct. The LP approximation is not valid in this case any more. The Optical Fibre Toolbox correctly simulates this situation using the full vector solution of the Maxwell equations.</p><pre class="codeinput">toc(tStart)
+</pre><pre class="codeoutput">Elapsed time is 61.084931 seconds.
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.13<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Optical Fibre Toolbox two-layer demo
+% This script demonstrates the use of Optical Fibre Toolbox functions for
+% calculation of two-layer fibres modes.
+% 
+% (cc-by) K. Karapetyan et al., AG Meschede, Uni Bonn, 2008REPLACE_WITH_DASH_DASH2011
+% 
+% kotya.karapetyan@gmail.com, http://agmeschede.iap.uni-bonn.de
+
+%%
+clc
+clear
+close all
+
+tStart = tic;
+addpath('..')
+fprintf('%s\n', 'Calculating...');
+
+%% Specify the fibre parameters
+
+% Note: diameter is specified in micrometers, wavelength in nanometers
+
+% Fibre materials (core, cladding)
+materials = {'sm800core'; 'silica'};
+
+% Fibre structure description
+fibre = struct(...
+    'materials', {materials});
+
+%% Create the task for dispersion curves calculation
+
+% Argument for dispersion curves calculation
+argument = struct(...
+    'type', 'wvl',... % calculate vs. wavelength
+    'harmonic', 1,... % required 
+    'min', 600,... % calculate from
+    'max', 1000); % calculate to
+
+% Specify which modes to search for
+modeTask = struct(...
+    'nu', [0 1 2],... % first modal index
+    'type', {{'hybrid', 'te', 'tm'}},... % mode types
+    'maxmode', 3,... % how many modes of each type and NU to calculate
+    'diameter', 5.6);%,... % parameter, structure diameter, if argument is wavelength
+    %'region', 'cladding');
+
+%% Find guided modes and calculate the dispersion curves
+infomode = false;
+modes = buildModes(argument, fibre, modeTask, infomode);    
+
+% Display calculated dispersion curves
+showModes(modes, 'Modal dispersion in a fibre');
+
+% Show which modes have been calculated
+fprintf('Modes found:\n');
+for i = 1:numel(modes)
+   fprintf('%s\n', modeDescription(modes(i), infomode));
+end
+
+% This fibre has a very low refractive index step between (0.005) and is
+% therefore weakly guiding. In a weakly guided fibre, modes HE21, TE01 and
+% TM01 lie very close to each other as can be seen in the picture. In the
+% weakly guidance approximation, the mode HE11 is sometimes denoted as LP01
+% mode and the HE21, TM01, TE01 mode triplet as LP21 mode.
+
+%% Field distribution
+poiType = 'wvl';
+poi = 900;
+par = 5.6; 
+task = struct('modetype', 'HYBRID', 'modeindex', [1 1]);
+infomode = false;
+getWholeMode = false;
+n = neff(poiType, poi, par, fibre, task, infomode, getWholeMode);
+
+% 
+d = par;
+window = 3 * d; 
+lambda = poi;
+Nr = [500, 1000]; % inn, out
+Nphi = [64, 64]; % inn, out
+dr_inn = d/2 / Nr(1);
+dr_out = (window/2 - d/2) / Nr(2);
+
+dphi_inn = 2 * pi / Nphi(1);
+dphi_out = 2 * pi / Nphi(2);
+
+F = struct('dr', [dr_inn dr_out], 'dphi', [dphi_inn dphi_out], ...
+    'diam', [d window], 'E1', [], 'H1', [], 'E2', [], 'H2', []);
+FG = fieldGrid(F);
+[F.E1, F.H1] = modeField(lambda, d, n, fibre, task, FG.R1, FG.PHI1);
+[F.E2, F.H2] = modeField(lambda, d, n, fibre, task, FG.R2, FG.PHI2);
+F.FG = FG;
+
+displayField2(F, d)
+
+%% Mode dispersion in a nanofibre
+% Calculate mode dispersion diagram for a fixed wavelength and varying
+% fibre diameter
+%
+% Specify the fibre parameters
+
+materials = {'silica'; 'air'};
+
+nanofibre = struct(...
+    'materials', {materials});
+
+argument = struct(...
+    'type', 'dia',... % calculate vs. wavelength
+    'min', 0.1,... % calculate from
+    'max', 1); % calculate to
+
+modeTask = struct(...
+    'nu', [0 1 2],... % first modal index
+    'type', {{'hybrid', 'te', 'tm'}},... % mode types
+    'maxmode', 3,... % how many modes of each type and NU to calculate
+    'lambda', 900);%,... % parameter, structure diameter, if argument is wavelength
+    %'region', 'cladding');
+    
+modes = buildModes(argument, nanofibre, modeTask, false);
+%%
+% Display calculated dispersion curves
+figure;
+showModes(modes, 'Modal dispersion in a nanofibre');
+%%
+% Show which modes have been calculated
+fprintf('Modes found:\n');
+for i = 1:numel(modes)
+   fprintf('%s\n', modeDescription(modes(i), false));
+end
+%%
+% Unlike in the weakly guidance example above, this nanofibre has a high
+% refractive index step (about 0.5) and is therefore strongly guiding.
+% All four modes HE11, HE21, TE01 and TM01 are therefore clearly distinct.
+% The LP approximation is not valid in this case any more. The Optical
+% Fibre Toolbox correctly simulates this situation using the full vector
+% solution of the Maxwell equations.
+
+toc(tStart)
+##### SOURCE END #####
+--></body></html>

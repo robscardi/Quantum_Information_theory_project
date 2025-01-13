@@ -34,7 +34,8 @@ base_impulse_normalized = base_impulse/(max(abs(fft(base_impulse))));
 t = linspace(-((span+1)/2)*T,  ((span+1)/2)*T, sps*span +1);
 
 %signal = zeros(span+1, length(t));
-total_sign = zeros(1, length(t));
+Nsample = length(t);
+total_sign = zeros(1, Nsample);
 
 for j = 0:(span)
     total_sign(j*sps + 1) = symbols(j+1);

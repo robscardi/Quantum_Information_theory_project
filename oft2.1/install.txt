@@ -1,0 +1,7 @@
+The toolbox functions and scripts need to have access to other toolbox functions. Therefore just put the toolbox files into any directory and add it to the Matlab path: File > Set path... > Add folder...
+
+Alternatively you can create a shortcut in the Shortcuts Toolbar with the contents:
+
+  addpath(path)
+
+where path is the local path to the toolbox directory (e.g. 'C:\Users\John\Documents\OFT') and run this shortcut each time you need OFT.

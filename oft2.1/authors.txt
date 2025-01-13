@@ -1,0 +1,12 @@
+MATLAB Optical Fibre Toolbox was created by the Fibres Team
+Dieter Meschede research group
+Institute of Applied Physics
+University of Bonn, Germany
+
+Idea, design and most of development: Konstantin (Kotya) Karapetyan.
+Parts of the code by (alphabetic order): Fabian Bruse, Cristian Dan, 
+Dimitri Pritzkau, Ulrich Wiedemann.
+
+Supervision: Wolfgang Alt.
+
+Group leader: Dieter Meschede.

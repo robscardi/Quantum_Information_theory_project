@@ -37,7 +37,7 @@ span = 16;
 total_duration = span*T;
 fs = 1/ts;
 L = span*sps;
-f = fs/L*(-L/2:L/2-1);
+f = fs/L*(-L/2:L/2);
 obs_time = 10*ts;
 b = 0.2;
 eta = 1;
@@ -93,47 +93,59 @@ Communication_lenght = 9*km;
 % for this snippet to work, download
 % https://it.mathworks.com/matlabcentral/fileexchange/27819-optical-fibre-toolbox
 % and add to path
-% materials = {'sm800core'; 'silica'};
-%     fibre = struct(...
-%     'materials', {materials});
-% 
-%     argument = struct(...
-%     'type', 'wvl',... % calculate vs. wavelength
-%     'harmonic', 1,... % required
-%     'min', 1400,... % calculate from
-%     'max', 2000 ...
-%     ); % calculate to
-% 
-%     modeTask = struct(...
-%     'nu', [0],... % first modal index
-%     'type', {'te'},... % mode types
-%     'maxmode', 1,... % how many modes of each type and NU to calculate
-%     'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
-%     %'region', 'cladding');
-% 
-%     infomode = false;
-% 
-%     modes = buildModes(argument, fibre, modeTask, infomode);
-% 
-%     neff = modes.NEFF;
-%     l = modes.ARG;
-% 
-%     neff_interpolated = interp1(l, neff, lambda_vector/nm);
-%     beta = zeros(size(f));
+materials = {'sm800core'; 'silica'};
+    fibre = struct(...
+    'materials', {materials});
+
+    argument = struct(...
+    'type', 'wvl',... % calculate vs. wavelength
+    'harmonic', 1,... % required
+    'min', 1400,... % calculate from
+    'max', 2000 ...
+    ); % calculate to
+
+    modeTask = struct(...
+    'nu', [0],... % first modal index
+    'type', {'te'},... % mode types
+    'maxmode', 1,... % how many modes of each type and NU to calculate
+    'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+    %'region', 'cladding');
+
+    infomode = false;
+
+    modes = buildModes(argument, fibre, modeTask, infomode);
+
+    neff = modes.NEFF;
+    l = modes.ARG;
+
+    neff_interpolated = interp1(l, neff, lambda_vector/nm);
+    beta = zeros(size(f));
 
 
-% for i = 1:length(lambda_vector)
-%     neff_ = neff_interpolated(i);
-%     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-% end
-    
+for i = 1:length(lambda_vector)
+    neff_ = neff_interpolated(i);
+    beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+end
+
+figure(Name="Dispersion")
+hold on
+title("Fiber dispersion diagram")
+plot(lambda_vector, beta)
+
+b_second = diff(beta, 2)./diff(lambda_vector,2);
+
+
 % MODIFY TO REGULATE DISPERSION
-D = 2*(ps/(nm*km));
-beta = D*((lo.lambda.*f).^2*pi/c);
+target_D = b_second(ceil(length(lambda_vector)/2));
+
+D = 1*(ps/(nm*km));
+beta_compensation = D*((lo.lambda.*f).^2*pi/c);
+
+beta = beta_compensation;
 
 ff = exp(-1i*beta*Communication_lenght);
 
-tt = fftshift(fft(ff/length(ff)));
+tt = ifftshift(ifft(ff));
 
 PPD = parallel.pool.PollableDataQueue;
 
@@ -151,8 +163,6 @@ end
 toc
 
 tic;
-figure
-hold on
 
 inphase = zeros(1, num_test);
 inquadrature = zeros(1, num_test);
@@ -165,13 +175,13 @@ for k = 1:num_test
     inquadrature(k) = imag(z);
 end
 
-scatter(inphase, inquadrature, Color="blue");
 toc
 
 %% COMMENT: UNCALIBRATE DETECTION 
 % TO SEE THE EFFECT OF DISPERSION WITHOUT THE CALIBRATION RUN, 
 % USING ONLY THE EXPECTED MEAN (DOESN'T RISULT IN CORRECT VALUES FOR HIGH
 % DISPERSION
+% WITH A PRIORI KNOWLEDGE OF THE SYMBOL AND AVERAGE POWER
  
 inphase_freq = zeros(1,length(symbol_vec));
 inquadr_freq = zeros(1,length(symbol_vec));
@@ -180,7 +190,11 @@ inquadr_freq = zeros(1,length(symbol_vec));
 mean_inphase = mean(inphase);
 mean_inquadrature = mean(inquadrature);
 
-s = decode_qam(syms/max_phot_p, max_symbol);
+inphase_coeff = mean_inphase/(real(symbol));
+inquadr_coeff = mean_inquadrature/imag(symbol);
+
+new_syms = inphase/inphase_coeff + 1i*inquadrature/inquadr_coeff;
+s = decode_qam(new_syms, max_symbol);
     inphas = s(1,:);
     inquad = s(2,:);
 
@@ -207,7 +221,7 @@ figure
 hold on 
 title("Uncalibrated Constellation")
 scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
-scatter(inphase/max_phot_p, inquadrature/max_phot_p, 'blue')
+scatter(inphase/inphase_coeff, inquadrature/inquadr_coeff, 'blue')
 
 
 %% CALIBRATION RUN
