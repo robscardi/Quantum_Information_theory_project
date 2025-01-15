@@ -98,12 +98,12 @@ Communication_lenght = 9*km;
 %     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
 % end
 
-    D = 0*(ps/(nm*km));
+    D = 17*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);
 
     ff = exp(-1i*beta*Communication_lenght);
     
-    tt = ifftshift(ifft(ff));
+    tt = ifftshift(ifft(iffshift(ff)));
 
 PPD = parallel.pool.PollableDataQueue;
 QBER = zeros(1, length(E_vector));
