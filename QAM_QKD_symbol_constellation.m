@@ -87,7 +87,7 @@ max_phot_p = (avg_p-avg_m);
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 9*km;
+Communication_lenght = 100*km;
 
 % Calculation for optical fibre effective refractive index
 % for this snippet to work, download
@@ -138,14 +138,19 @@ b_second = diff(beta, 2)./diff(lambda_vector,2);
 % MODIFY TO REGULATE DISPERSION
 target_D = b_second(ceil(length(lambda_vector)/2));
 
-D = 1*(ps/(nm*km));
+D = 17*(ps/(nm*km));
 beta_compensation = D*((lo.lambda.*f).^2*pi/c);
 
 beta = beta_compensation;
 
 ff = exp(-1i*beta*Communication_lenght);
 
-tt = ifftshift(ifft(ff));
+tt = ifftshift(ifft(ifftshift(ff)));
+
+figure
+hold on 
+plot(lambda_vector, real(tt))
+plot(lambda_vector, imag(tt))
 
 PPD = parallel.pool.PollableDataQueue;
 
@@ -283,8 +288,8 @@ legend on
 figure
 hold on
 title("Calibrated constellation : " + 2^n_bit + "QAM")
-plot(real(total_symbols), imag(total_symbols), '*', 'MarkerFaceColor', 'y', 'MarkerSize', 6);
 scatter(inphase/t_mean_inphase, inquadrature/t_mean_inquadrature, 'blue')
+plot(real(total_symbols), imag(total_symbols), '*', 'MarkerFaceColor','yellow', 'MarkerSize', 16);
 grid on
 
 
