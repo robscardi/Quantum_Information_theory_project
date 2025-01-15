@@ -73,12 +73,9 @@ base_impulse_normalized = base_impulse/(max(abs(fft(base_impulse))));
 
 arrival_impulse = conv(base_impulse, base_impulse_normalized, "same");
 
-%arrival_impulse_energy = trapz(abs(arrival_impulse).^2); %test symbol
-%energy
+
 symbol_sample = arrival_impulse(middle-half_sample_num: middle+half_sample_num);
 
-%figure
-%plot(arrival_impulse) 
 avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.field).^2)*ts/phot_energy/obs_time;
 avg_m = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field - lo.field).^2)*ts/phot_energy/obs_time;
 
