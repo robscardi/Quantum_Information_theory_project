@@ -29,12 +29,12 @@ sps = samples_per_symbol;
 ts = T/sps;
 base_impulse = rcosdesign(beta, span, sps);
 
-base_impulse_normalized = base_impulse/(max(abs(fft(base_impulse))));
+base_impulse_normalized = base_impulse;
 
-t = linspace(-((span+1)/2)*T,  ((span+1)/2)*T, sps*span +1);
+
 
 %signal = zeros(span+1, length(t));
-Nsample = length(t);
+Nsample = sps*span +1;
 total_sign = zeros(1, Nsample);
 
 for j = 0:(span)
@@ -59,25 +59,38 @@ filtered = conv(dispersed_signal, base_impulse_normalized, "same");
 %energy_final = trapz(abs(filtered).^2)
 
 %% PHASE NOISE
+f = (-Nsample/2:Nsample/2) / ts/Nsample;
 
-fmin = fc - lo.linewidth/2;
-fmax = fc + lo.linewidth/2;
+D = 10^(lo.PSD/10)*(lo.field.^2);
+S_f = D^2./ ((1 + (f / lo.linewidth).^2)*lo.linewidth*2*pi);
 
-D = 10^(lo.PSD/10);
-var = D*((1/fmin)-(1/fmax));
-std = sqrt(var);
+white_noise_real = randn(1, Nsample+1);
+white_noise_imag = randn(1, Nsample+1);
 
-phi = zeros(1, sample_num+1);
-random_walk = std*randn(1, length(phi)-1);
+white_noise = white_noise_real + 1j * white_noise_imag;
+delta_f_freq_domain = white_noise .* sqrt(S_f);
+delta_f_time_domain = ifft(delta_f_freq_domain);
+delta_f_time_domain = real(delta_f_time_domain);
 
-for i = 1:1:length(phi)-1
-    phi(i+1) = phi(i) + random_walk(i);
-end
+% fmin = fc - lo.linewidth/2;
+% fmax = fc + lo.linewidth/2;
+% 
+% var = D*((1/fmin)-(1/fmax));
+% std = sqrt(var);
+% 
+% phi = zeros(1, sample_num+1);
+% random_walk = std*randn(1, length(phi)-1);
+% 
+% for i = 1:1:length(phi)-1
+%     phi(i+1) = phi(i) + random_walk(i);
+% end
+phi = cumsum(delta_f_time_domain);
 
 %% PHOTODETECTOR
     middle = sps*span/2 +1;
     half_sample_num = ceil(sample_num/2);
     symbol_sample = filtered(middle-half_sample_num: middle+half_sample_num);
+    phi = phi(middle-half_sample_num:middle+half_sample_num);
     %% IN PHASE
     lo.laser = lo.field*exp(1i*phi);
     avg_p = eta*eps*Aeff*trapz(abs(symbol_sample*maximum_field + lo.laser).^2)*ts/phot_energy/obs_time;

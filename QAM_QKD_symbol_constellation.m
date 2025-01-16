@@ -18,7 +18,7 @@ ps = 1e-12;
 mW = 1e-3;
 
 %% CONSTANTS
-symbol = (-1+17i);
+symbol = (-1+5i);
 B = 400e6;
 c = 299792458;
 h = 6.62607015e-34;
@@ -45,8 +45,8 @@ maximum_field = 1e1; %Incoming signal field
 
 %% LO DATA
 lo.linewidth = 1*kHz;
-lo.PSD = -40;
 lo.lambda = 1550*nm;
+lo.PSD = 25;
 lo.field = 1e3;
 fc = c/lo.lambda;
 
@@ -57,7 +57,7 @@ sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sa
 
 
 %% CONSTELLATION DATA
-n_bit = 10;
+n_bit = 5;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
@@ -90,52 +90,52 @@ Communication_lenght = 100*km;
 % for this snippet to work, download
 % https://it.mathworks.com/matlabcentral/fileexchange/27819-optical-fibre-toolbox
 % and add to path
-materials = {'sm800core'; 'silica'};
-    fibre = struct(...
-    'materials', {materials});
+% materials = {'sm800core'; 'silica'};
+%     fibre = struct(...
+%     'materials', {materials});
+% 
+%     argument = struct(...
+%     'type', 'wvl',... % calculate vs. wavelength
+%     'harmonic', 1,... % required
+%     'min', 1400,... % calculate from
+%     'max', 2000 ...
+%     ); % calculate to
+% 
+%     modeTask = struct(...
+%     'nu', [0],... % first modal index
+%     'type', {'te'},... % mode types
+%     'maxmode', 1,... % how many modes of each type and NU to calculate
+%     'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
+%     %'region', 'cladding');
+% 
+%     infomode = false;
+% 
+%     modes = buildModes(argument, fibre, modeTask, infomode);
+% 
+%     neff = modes.NEFF;
+%     l = modes.ARG;
+% 
+%     neff_interpolated = interp1(l, neff, lambda_vector/nm);
+%     beta = zeros(size(f));
+% 
+% 
+% for i = 1:length(lambda_vector)
+%     neff_ = neff_interpolated(i);
+%     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
+% end
+% 
+% figure(Name="Dispersion")
+% hold on
+% title("Fiber dispersion diagram")
+% plot(lambda_vector, beta)
+% 
+% b_second = diff(beta, 2)./diff(lambda_vector,2);
+% 
+% 
+% % MODIFY TO REGULATE DISPERSION
+% target_D = b_second(ceil(length(lambda_vector)/2));
 
-    argument = struct(...
-    'type', 'wvl',... % calculate vs. wavelength
-    'harmonic', 1,... % required
-    'min', 1400,... % calculate from
-    'max', 2000 ...
-    ); % calculate to
-
-    modeTask = struct(...
-    'nu', [0],... % first modal index
-    'type', {'te'},... % mode types
-    'maxmode', 1,... % how many modes of each type and NU to calculate
-    'diameter', 9);%,... % parameter, structure diameter, if argument is wavelength
-    %'region', 'cladding');
-
-    infomode = false;
-
-    modes = buildModes(argument, fibre, modeTask, infomode);
-
-    neff = modes.NEFF;
-    l = modes.ARG;
-
-    neff_interpolated = interp1(l, neff, lambda_vector/nm);
-    beta = zeros(size(f));
-
-
-for i = 1:length(lambda_vector)
-    neff_ = neff_interpolated(i);
-    beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
-end
-
-figure(Name="Dispersion")
-hold on
-title("Fiber dispersion diagram")
-plot(lambda_vector, beta)
-
-b_second = diff(beta, 2)./diff(lambda_vector,2);
-
-
-% MODIFY TO REGULATE DISPERSION
-target_D = b_second(ceil(length(lambda_vector)/2));
-
-D = 17*(ps/(nm*km));
+D = 0*(ps/(nm*km));
 beta_compensation = D*((lo.lambda.*f).^2*pi/c);
 
 beta = beta_compensation;
@@ -223,7 +223,7 @@ figure
 hold on 
 title("Uncalibrated Constellation")
 scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
-scatter(inphase/inphase_coeff, inquadrature/inquadr_coeff, 'blue')
+scatter(inphase/max_phot_p, inquadrature/max_phot_p, 'blue')
 
 
 %% CALIBRATION RUN
@@ -288,7 +288,7 @@ title("Calibrated constellation : " + 2^n_bit + "QAM")
 scatter(inphase/t_mean_inphase, inquadrature/t_mean_inquadrature, 'blue')
 plot(real(total_symbols), imag(total_symbols), '*', 'MarkerFaceColor','yellow', 'MarkerSize', 16);
 grid on
-
+pbaspect([1 1 1])
 
 function [s] = decode_qam(symbol, max_symbol)
     p = real(symbol);
