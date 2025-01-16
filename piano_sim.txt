@@ -1,0 +1,13 @@
+formato:
+sostituire n d l w p
+n_bit_d_disp_l_km_wkhz_pdbm.mat
+
+simulazioni:
+con dispersione 17 + phase noise 1 khz 20 dbm 9 km
+con dispersione 17 + phase noise 1 khz 20 dbm 90 km
+phase noise 1 khz 20 dbm + 0 dispersione 
+
+simulazioni gia fatte:
+con dispersione 17 km 9
+con dispersione 17 km 90
+senza effetti (shot noise)
