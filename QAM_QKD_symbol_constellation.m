@@ -57,7 +57,7 @@ sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sa
 
 
 %% CONSTELLATION DATA
-n_bit = 5;
+n_bit = 10;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));

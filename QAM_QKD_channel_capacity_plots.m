@@ -36,8 +36,8 @@ eta = 1;
 maximum_field = 1e1;
 
 %% LO DATA
-lo.linewidth = 10*kHz;
-lo.PSD = -40;
+lo.linewidth = 1*kHz;
+lo.PSD = 20;
 lo.lambda = 1550*nm;
 lo.field = 1e1;
 fc = c/lo.lambda;
@@ -98,7 +98,7 @@ Communication_lenght = 9*km;
 %     beta(end+1-i) = 2*pi*neff_/lambda_vector(i);
 % end
 
-    D = 17*(ps/(nm*km));
+    D = 0*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);
 
     ff = exp(-1i*beta*Communication_lenght);
