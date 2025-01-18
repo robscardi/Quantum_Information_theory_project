@@ -59,6 +59,8 @@ symbol_sample = arrival_impulse(middle-half_sample_num: middle+half_sample_num);
 %figure
 %plot(arrival_impulse)
 k = 1;
+avg_p = zeros('like', x);
+avg_m = zeros('like', x);
 for g= x
     avg_p(k) = eta*eps*Aeff*trapz(abs(symbol_sample*10 + g).^2)*ts/phot_energy/obs_time;
     avg_m(k) = eta*eps*Aeff*trapz(abs(symbol_sample*10 - g).^2)*ts/phot_energy/obs_time;
@@ -68,7 +70,7 @@ max_phot = (avg_p-avg_m);
 
 g = zeros(10, length(x));
 q = zeros(10, length(x));
-data_string = "17_disp_9_km_1khz_-infdbm";
+data_string = "0_disp_9_km_1khz_25dbm";
 
 for i=2:10
     a = load("Data\"+data_string + "\" + i +"_bit_"+data_string+".mat");
