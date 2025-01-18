@@ -1,6 +1,6 @@
 formato cartella:
 sostituire n d l w p
-n_bit_d_disp_l_km_wkhz_pdbm.mat
+d_disp_l_km_wkhz_pdbm
 
 formato file:
 {QBER_}n_bit.mat
@@ -12,10 +12,9 @@ solo phase noise : 1khz -80 dbc
 solo phase noise : 10khz -60 dbc
 solo phase noise : 100khz -40 dbc
 
-solo dispersione : 17 ps/nm km 10 km
-solo dispersione : 17 ps/nm km 100 km
-solo dispersione : 17 ps/nm km 250 km
+solo dispersione : 17 ps/nm km Lmax/2
+solo dispersione : 17 ps/nm km Lmax
+solo dispersione : 17 ps/nm km Lmax*2
 
-disp + phase noise : 17 ps/nmkm 10 km 1khz -80 dbc
-disp + phase noise : 17 ps/nmkm 100 km 1khz -80 dbc
-
+disp + phase noise : 17 ps/nmkm Lmax km 1khz -80 dbc
+disp + phase noise : 17 ps/nmkm Lmax km 10khz -60 dbc

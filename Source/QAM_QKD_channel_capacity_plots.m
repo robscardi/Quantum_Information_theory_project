@@ -67,7 +67,7 @@ D = 17*(ps/(nm*km));
 beta = D*((lo.lambda.*f).^2*pi/c);
 Lmax = c/(4*D*lo.lambda^2*B^2);
 
-Communication_lenght = 100*km;
+Communication_lenght = ;
 ff = exp(-1i*beta*Communication_lenght);
 tt = ifftshift(ifft(ifftshift(ff)));
 
