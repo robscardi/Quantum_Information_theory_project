@@ -34,7 +34,7 @@ end
 
 figure
 grid on
-plot(random_walk)
+plot(phi)
 
 ff = fftshift(fft(phi));
 figure
