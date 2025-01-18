@@ -64,8 +64,8 @@ f = (-Nsample/2:Nsample/2) / ts/Nsample;
 D = lo.field*10^(lo.PSD/10);
 S_f = D^2./ ((1 + (f / lo.linewidth).^2)*lo.linewidth*2*pi);
 
-white_noise_real = randn(1, (sample_num)+1);
-white_noise_imag = randn(1, (sample_num)+1);
+white_noise_real = randn(1, (Nsample)+1);
+white_noise_imag = randn(1, (Nsample)+1);
 
 white_noise = white_noise_real;
 white_noise_ff = fftshift(fft(white_noise));

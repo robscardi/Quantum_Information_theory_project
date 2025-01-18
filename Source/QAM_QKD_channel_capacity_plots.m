@@ -37,7 +37,7 @@ maximum_field = 1e1;
 
 %% LO DATA
 lo.linewidth = 1*kHz;
-lo.PSD = 20;
+lo.PSD = -inf;
 lo.lambda = 1550*nm;
 lo.field = 1e1;
 fc = c/lo.lambda;
@@ -62,7 +62,7 @@ num_test = 1000;
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 9*km;
+Communication_lenght = 10*km;
     
     D = 0*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);
