@@ -37,7 +37,7 @@ maximum_field = 1e1;
 
 %% LO DATA
 lo.linewidth = 1*kHz;
-lo.PSD = 20;
+lo.PSD = -inf;
 lo.lambda = 1550*nm;
 lo.field = 1e1;
 fc = c/lo.lambda;
@@ -52,7 +52,7 @@ E_vector = linspace(1e1, 5e2, N_e_vector);
 MI_vector = zeros(1,N_e_vector);
 
 %% CONSTELLATION DATA
-n_bit = 2;
+n_bit = 3;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));

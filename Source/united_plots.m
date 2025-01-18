@@ -99,7 +99,7 @@ text(12, C_h(end)-0.05, "Holevo Bound", fontsize=25)
 plot(max_phot, C_s2, DisplayName="Shannon Bound", LineWidth=2)
 text(12, C_s2(end)-0.38,"Shannon Bound", fontsize=25)
 %legend("FontSize",15)
-xlim([1, max_phot(end)])
+xlim([2, max_phot(end)])
 xlabel("# Photon", FontSize=45)
 ylabel("Mutual Information [bits]", FontSize=45)
 grid on
@@ -111,7 +111,7 @@ for i=2:10
     semilogy(max_phot, q(i,:), "DisplayName",2^i +"QAM", LineWidth=2)
     hold on
 end
-xlim([1, max_phot(end)])
+xlim([2, max_phot(end)])
 xlabel("# Photon", FontSize=45)
 ylabel("Bit Error Rate", FontSize=45)
 legend("FontSize",25, 'Location', 'best', 'NumColumns', ceil(numel(findall(gca, 'Type', 'line')) / 2));
