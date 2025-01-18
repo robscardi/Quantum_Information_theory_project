@@ -70,7 +70,7 @@ max_phot = (avg_p-avg_m);
 
 g = zeros(10, length(x));
 q = zeros(10, length(x));
-data_string = "17_disp_100_km_1khz_-80dbm";
+data_string = "0_disp_10_km_100khz_-40dbm";
 
 for i=2:8
     a = load("..\Data\" + data_string + "\"+ i +"_bit.mat");
