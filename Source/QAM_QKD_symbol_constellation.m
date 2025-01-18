@@ -11,6 +11,7 @@ clear variables
 um = 1e-6;
 nm = 1e-9;
 pm = 1e-12;
+GHz = 1e9;
 MHz = 1e6;
 kHz = 1e3;
 km = 1e3;
@@ -19,7 +20,7 @@ mW = 1e-3;
 
 %% CONSTANTS
 symbol = (-1+5i);
-B = 400e6;
+B = 28*GHz;
 c = 299792458;
 h = 6.62607015e-34;
 
@@ -42,6 +43,7 @@ obs_time = 10*ts;
 b = 0.2;
 eta = 1;
 maximum_field = 1e1; %Incoming signal field
+
 
 %% LO DATA
 lo.linewidth = 1*kHz;
@@ -84,10 +86,11 @@ max_phot_p = (avg_p-avg_m);
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 1000*km;
+D = 20*(ps/(nm*km));
+Lmax = c/(4*D*lo.lambda^2*B^2);
 
-D = 17*(ps/(nm*km));
-beta_compensation = D*((lo.lambda.*f).^2*pi/c);
+Communication_lenght = Lmax;
+beta_compensation = D*(((lo.lambda .*f).^2)*pi/c);
 
 beta = beta_compensation;
 
@@ -97,8 +100,13 @@ tt = ifftshift(ifft(ifftshift(ff)));
 
 figure
 hold on 
-plot(lambda_vector, real(tt))
-plot(lambda_vector, imag(tt))
+stem(lambda_vector, real(tt))
+%plot(lambda_vector, imag(tt))
+
+figure
+plot(f/1e9, unwrap(angle(ff)))
+grid on
+
 
 PPD = parallel.pool.PollableDataQueue;
 
@@ -180,7 +188,7 @@ pbaspect([1 1 1])
 %% CALIBRATION RUN
 
 symbol = 1+1i;
-num_test = 1;
+%num_test = 1;
 
 parfor k =1:num_test
     random_indices = randi(length(total_symbols), 1, span+1);

@@ -11,7 +11,7 @@ km = 1e3;
 ps = 1e-12;
 mW = 1e-3;
 
-B = 400e6;
+B = 28*GHz;
 c = 299792458;
 h = 6.62607015e-34;
 
@@ -62,14 +62,14 @@ num_test = 1000;
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 100*km;
-    
-    D = 17*(ps/(nm*km));
-    beta = D*((lo.lambda.*f).^2*pi/c);
 
-    ff = exp(-1i*beta*Communication_lenght);
-    
-    tt = ifftshift(ifft(ifftshift(ff)));
+D = 17*(ps/(nm*km));
+beta = D*((lo.lambda.*f).^2*pi/c);
+Lmax = c/(4*D*lo.lambda^2*B^2);
+
+Communication_lenght = 100*km;
+ff = exp(-1i*beta*Communication_lenght);
+tt = ifftshift(ifft(ifftshift(ff)));
 
 PPD = parallel.pool.PollableDataQueue;
 QBER = zeros(1, length(E_vector));
