@@ -52,7 +52,7 @@ E_vector = linspace(1e1, 5e2, N_e_vector);
 MI_vector = zeros(1,N_e_vector);
 
 %% CONSTELLATION DATA
-n_bit = 3;
+n_bit = 5;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
@@ -62,9 +62,9 @@ num_test = 1000;
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 10*km;
+Communication_lenght = 100*km;
     
-    D = 0*(ps/(nm*km));
+    D = 17*(ps/(nm*km));
     beta = D*((lo.lambda.*f).^2*pi/c);
 
     ff = exp(-1i*beta*Communication_lenght);
@@ -78,8 +78,8 @@ for g =1:N_e_vector
     %% CALIBRATION RUN
     symbol = 1+1i;
     parfor k =1:num_test
-        random_indices = randi(length(symbol_vec), 1, span+1);
-        symbols = symbol_vec(random_indices);
+        random_indices = randi(length(total_symbols), 1, span+1);
+        symbols = total_symbols(random_indices);
         symbols(span/2 +1 ) = symbol;
         [x, y]= optical_channel_func(lo,b, span, symbols, maximum_field, B, sps, sample_num, eta, tt, obs_time);
         send(PPD, x+1i*y);

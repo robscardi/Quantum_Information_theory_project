@@ -70,12 +70,12 @@ max_phot = (avg_p-avg_m);
 
 g = zeros(10, length(x));
 q = zeros(10, length(x));
-data_string = "17_disp_90_km_10khz_-infdbm";
+data_string = "17_disp_10_km_1khz_-infdbm";
 
-for i=2:10
-    a = load("Data\"+ i +"_bit.mat");
+for i=2:8
+    a = load("..\Data\" + data_string + "\"+ i +"_bit.mat");
     g(i,:) = a(1).MI_vector;
-    a = load("Data\QBER_"+ i +"_bit.mat");
+    a = load("..\Data\" + data_string + "\"+ "QBER_"+ i +"_bit.mat");
     q(i,:) = a(1).QBER;
 end
 

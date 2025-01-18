@@ -46,8 +46,8 @@ maximum_field = 1e1; %Incoming signal field
 %% LO DATA
 lo.linewidth = 1*kHz;
 lo.lambda = 1550*nm;
-lo.PSD = 25;
-lo.field = 1e3;
+lo.PSD = -inf;
+lo.field = 1e2;
 fc = c/lo.lambda;
 
 phot_energy = h*fc;
@@ -57,7 +57,7 @@ sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sa
 
 
 %% CONSTELLATION DATA
-n_bit = 10;
+n_bit = 5;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
@@ -84,9 +84,9 @@ max_phot_p = (avg_p-avg_m);
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 100*km;
+Communication_lenght = 1000*km;
 
-D = 0*(ps/(nm*km));
+D = 17*(ps/(nm*km));
 beta_compensation = D*((lo.lambda.*f).^2*pi/c);
 
 beta = beta_compensation;
@@ -104,7 +104,7 @@ PPD = parallel.pool.PollableDataQueue;
 
 %% SIMULATION
 
-num_test = 100000;
+num_test = 10000;
 tic;
 parfor k =1:num_test
     random_indices = randi(length(total_symbols), 1, span+1);
@@ -173,17 +173,18 @@ scatter(inphas, inquad)
 figure
 hold on 
 title("Uncalibrated Constellation")
-scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
 scatter(inphase/max_phot_p, inquadrature/max_phot_p, 'blue')
-
+scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
+pbaspect([1 1 1])
 
 %% CALIBRATION RUN
 
 symbol = 1+1i;
+num_test = 1;
 
 parfor k =1:num_test
-    random_indices = randi(length(symbol_vec), 1, span+1);
-    symbols = symbol_vec(random_indices);
+    random_indices = randi(length(total_symbols), 1, span+1);
+    symbols = total_symbols(random_indices);
     symbols(span/2 +1 ) = symbol;
     [x, y]= optical_channel_func(lo,b, span, symbols, maximum_field, B, sps, sample_num, eta, tt, obs_time);
     send(PPD, x+1i*y);
