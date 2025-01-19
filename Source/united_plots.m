@@ -47,7 +47,7 @@ sample_num = (mod(sample_num, 2) == 0)*(sample_num) + (mod(sample_num,2)==1)*(sa
 middle = sps*span/2 +1;
 half_sample_num = ceil(sample_num/2);
 
-base_impulse = 1*rcosdesign(b, span, sps);
+base_impulse = rcosdesign(b, span, sps);
 base_impulse_normalized = base_impulse/(max(abs(fft(base_impulse))));
 
 arrival_impulse = conv(base_impulse, base_impulse_normalized, "same");
@@ -66,16 +66,16 @@ for g= x
     avg_m(k) = eta*eps*Aeff*trapz(abs(symbol_sample*10 - g).^2)*ts/phot_energy/obs_time;
     k = 1+k;
 end
-max_phot = (avg_p-avg_m);
+max_phot = (avg_p-avg_m)*sqrt(2);
 
 g = zeros(10, length(x));
 q = zeros(10, length(x));
-data_string = "0_disp_10_km_100khz_-40dbm";
+data_string = "0_disp_10_km_1khz_-80dbm";
 
-for i=2:8
-    a = load("..\Data\" + data_string + "\"+ i +"_bit.mat");
+for i=2:10
+    a = load("../Data/" + data_string + "/"+ i +"_bit.mat");
     g(i,:) = a(1).MI_vector;
-    a = load("..\Data\" + data_string + "\"+ "QBER_"+ i +"_bit.mat");
+    a = load("../Data/" + data_string + "/"+ "QBER_"+ i +"_bit.mat");
     q(i,:) = a(1).QBER;
 end
 
