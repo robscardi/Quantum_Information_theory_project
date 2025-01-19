@@ -53,7 +53,7 @@ E_vector = linspace(1e1, 5e2, N_e_vector);
 MI_vector = zeros(1,N_e_vector);
 
 %% CONSTELLATION DATA
-n_bit = 8;
+n_bit = 2;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
