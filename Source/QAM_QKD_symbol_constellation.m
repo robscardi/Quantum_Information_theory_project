@@ -19,7 +19,7 @@ ps = 1e-12;
 mW = 1e-3;
 
 %% CONSTANTS
-symbol = (-1+5i);
+symbol = (-1+3i);
 B = 28*GHz;
 c = 299792458;
 h = 6.62607015e-34;
@@ -48,7 +48,7 @@ maximum_field = 1e1; %Incoming signal field
 %% LO DATA
 lo.linewidth = 1*kHz;
 lo.lambda = 1550*nm;
-lo.PSD = -inf;
+lo.PSD = -60;
 lo.field = 1e2;
 fc = c/lo.lambda;
 
@@ -86,10 +86,10 @@ max_phot_p = (avg_p-avg_m);
 %% DISPERSION CALCULATION
 
 lambda_vector = c./(f+fc);
-D = 20*(ps/(nm*km));
+D = 0*(ps/(nm*km));
 Lmax = c/(4*D*lo.lambda^2*B^2);
 
-Communication_lenght = Lmax;
+Communication_lenght = 10;
 beta_compensation = D*(((lo.lambda .*f).^2)*pi/c);
 
 beta = beta_compensation;
@@ -186,7 +186,7 @@ scatter(real(total_symbols), imag(total_symbols), 'yellow', '*')
 pbaspect([1 1 1])
 
 %% CALIBRATION RUN
-
+og_symbol = symbol;
 symbol = 1+1i;
 %num_test = 1;
 
@@ -246,9 +246,14 @@ figure
 hold on
 title("Calibrated constellation : " + 2^n_bit + "QAM")
 scatter(inphase/t_mean_inphase, inquadrature/t_mean_inquadrature, 'blue')
-plot(real(total_symbols), imag(total_symbols), '*', 'MarkerFaceColor','yellow', 'MarkerSize', 16);
-grid on
+plot(real(total_symbols), imag(total_symbols), 'o', 'MarkerSize', 16, 'LineWidth',2.5);
+plot(real(og_symbol), imag(og_symbol), 'o', 'MarkerSize', 16, 'LineWidth',2.5, Color='yellow');
+grid minor
 pbaspect([1 1 1])
+ax = gca; % Get the current axis
+ax.FontSize = 30;
+xticks(symbol_vec)
+yticks(symbol_vec)
 
 function [s] = decode_qam(symbol, max_symbol)
     p = real(symbol);

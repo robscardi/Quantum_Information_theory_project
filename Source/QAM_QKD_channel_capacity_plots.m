@@ -37,8 +37,8 @@ eta = 1;
 maximum_field = 1e1;
 
 %% LO DATA
-lo.linewidth = 10*kHz;
-lo.PSD = -60;
+lo.linewidth = 1*kHz;
+lo.PSD = -80;
 lo.lambda = 1550*nm;
 lo.field = 1e1;
 fc = c/lo.lambda;
@@ -53,7 +53,7 @@ E_vector = linspace(1e1, 5e2, N_e_vector);
 MI_vector = zeros(1,N_e_vector);
 
 %% CONSTELLATION DATA
-n_bit = 2;
+n_bit = 3;
 M = 2^n_bit;
 total_symbols = qammod(0:M-1, M);
 symbol_vec = unique(real(total_symbols));
@@ -64,11 +64,11 @@ num_test = 1000;
 
 lambda_vector = c./(f+fc);
 
-D = 0*(ps/(nm*km));
+D = 17*(ps/(nm*km));
 beta = D*((lo.lambda.*f).^2*pi/c);
 Lmax = c/(4*D*lo.lambda^2*B^2);
 
-Communication_lenght = 10;
+Communication_lenght = Lmax;
 ff = exp(-1i*beta*Communication_lenght);
 tt = ifftshift(ifft(ifftshift(ff)));
 

@@ -54,15 +54,19 @@ plot(10*log10(abs(S_f)))
 
 figure
 grid on
-plot(phi)
+plot(phi, LineWidth=2)
 ylabel("Lorentzian random walk", FontSize=40)
 xlabel("Sample number", FontSize=40)
 grid on
 xlim([0 sample_num])
+ax = gca; % Get the current axis
+ax.FontSize = 30;
 
 ff = fftshift(fft(phi));
 figure
-plot(f/MHz, 20*log10(abs(ff)/lo.field))
+plot(f/MHz, 20*log10(abs(ff)/lo.field), LineWidth=2)
 ylabel("Phase noise PSD [dBc/Hz]", FontSize=35)
 xlabel("Frequency [MHz]", FontSize=35)
 grid on
+ax = gca; % Get the current axis
+ax.FontSize = 30;
