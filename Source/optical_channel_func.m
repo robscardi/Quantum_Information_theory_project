@@ -7,19 +7,16 @@ um = 1e-6;
 
 %% CONSTANTS
 B = symbol_rate;           %Symbol rate
-c = 299792458;
 
+c = 299792458;
 h = 6.62607015e-34;
 
-
 fiber_width = 9*um;
-
 Aeff = pi*(fiber_width/2).^2;
 eps0 = 8.8541878188e-12;
 eps = (1.46).^2*eps0;
 
 fc = c/lo.lambda; 
-
 phot_energy = h*fc;
 
 %% PULSE SHAPING
@@ -31,32 +28,22 @@ base_impulse = rcosdesign(beta, span, sps);
 
 base_impulse_normalized = base_impulse;
 
-
-
-%signal = zeros(span+1, length(t));
 Nsample = sps*span +1;
 total_sign = zeros(1, Nsample);
 
 for j = 0:(span)
     total_sign(j*sps + 1) = symbols(j+1);
-    %signal(j+1, j*sps +1 ) = symbols(j+1);
-    %signal(j+1, :) = conv(base_impulse, signal(j+1, :), "same");
 end
 
 total_sign = conv(base_impulse/max(base_impulse), total_sign, "same");
-
-%energy_begin = trapz(abs(total_sign).^2)
 
 %% APPLY DISPERSION
 
 dispersed_signal = conv(total_sign, dispesion_array, "same");
 
-%dispersed_energy = trapz(abs(dispersed_signal).^2)
 %% FINAL FILTERING
 
 filtered = conv(dispersed_signal, base_impulse_normalized, "same");
-
-%energy_final = trapz(abs(filtered).^2)
 
 %% PHASE NOISE
 f = (-Nsample/2:Nsample/2) / ts/Nsample;

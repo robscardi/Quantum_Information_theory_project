@@ -47,7 +47,7 @@ lambda = 1550*nm;
 fc = c/lambda;
 
 lambda_vector = c./(f+fc);
-Communication_lenght = 250*km;
+Communication_lenght = 200*km;
 
 D = 17*(ps/(nm*km));
 beta = D*((lambda.*f).^2*pi/c);
@@ -73,17 +73,18 @@ for i=1:size(signal,1)
 end
 
 figure
-plot(angle(ff))
+plot(unwrap(angle(ff)))
 grid on
 
 figure
-plot(real(tt))
+stem((lambda_vector)*1e6, real(tt),MarkerSize=5, LineWidth=2)
+xlabel("Wavelength [\mum]")
+ylabel("Re Dispersion filter")
+ax = gca; % Get the current axis
+ax.FontSize = 30;
 grid on
 
 figure
 plot(abs(signal(3,:)))
 
-figure(abs())
-
-figure
 
