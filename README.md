@@ -4,7 +4,7 @@ This repository contains the code used in "Analysis and computation of DV and CV
 
 ## Scope
 
-The scope of this project is calculate the mutual information and qubit error rate of the BB02 continuos variable quantum key distribution. </br>
+The scope of this project is calculate the mutual information and qubit error rate of the GG02 continuos variable quantum key distribution. </br>
 Details on theory and results are present in the report.
 
 ## Code Structure
